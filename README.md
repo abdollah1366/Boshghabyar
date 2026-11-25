@@ -57,6 +57,31 @@ npm run smoke       # 22/22 بررسی API (SERVER باید در حال اجرا
 
 نتایج اجرای نهایی (۱۴۰۵/۰۹/۰۴ — ۲۵ نوامبر ۲۰۲۶): typecheck ✅، ۷/۷ تست ✅، build ✅ (gzip وب ۹۵.۲KB)، smoke ۲۲/۲۲ ✅، `expo-doctor` ۲۰/۲۰ ✅، `npm audit` صفر critical/high ✅.
 
+## ساخت APK با Android Studio
+
+پوشهٔ `android/` به‌صورت خودکار از روی `app.json` ساخته می‌شود (Continuous Native Generation) و در gitignore است؛ آن را دستی ویرایش نکنید.
+
+```bash
+# ۱) تولید پروژهٔ native اندروید
+cd apps/mobile
+npx expo prebuild --platform android
+```
+
+۲) Android Studio → **Open** → پوشهٔ `apps/mobile/android` را باز کنید و منتظر پایان Gradle Sync بمانید.
+
+۳) اتصال Git: Android Studio ریشهٔ مخزن (`Boshghabyar`) را از پوشهٔ والد به‌طور خودکار تشخیص می‌دهد؛ از منوی **Git / VCS** می‌توانید تغییرات را ببینید و commit کنید. پوشهٔ `android/` عمداً در gitignore است.
+
+۴) ساخت فایل APK (بدون نیاز به شبیه‌ساز): **Build → Build Bundle(s)/APK(s) → Build APK(s)**؛ خروجی در `android/app/build/outputs/apk/debug/app-debug.apk` ساخته می‌شود.
+
+۵) اجرا روی شبیه‌ساز: **Device Manager → Create Virtual Device** (ایمیج نصب‌شدهٔ `android-37`)، سپس **Run 'app'**. پیش از Run این دو را در ترمینال جدا اجرا کنید:
+
+```bash
+npm run api:dev        # API روی پورت 3001
+npm run mobile:start   # Metro (باندلر JS)
+```
+
+> آدرس API برای شبیه‌ساز اندروید `http://10.0.2.2:3001` است (از قبل در `apps/mobile/src/lib/api.ts` تنظیم شده). برای گوشی واقعی، `EXPO_PUBLIC_API_URL=http://<IP-شبکهٔ-لپ‌تاپ>:3001` را تنظیم کنید. Gradle 9.4.1 با JDK 25 (همان JBR اندروید استودیو) سازگار است.
+
 ## مستندات
 
 - [`docs/00-roadmap.md`](docs/00-roadmap.md) — نقشۀ مراحل P0–P7
@@ -70,7 +95,7 @@ npm run smoke       # 22/22 بررسی API (SERVER باید در حال اجرا
 
 ## محدودیتهای صریح
 
-- ساخت APK و اجرا در شبیهساز اندروید در این محیط انجامنشده است (نیاز به EAS/Android SDK).
+- پروژهٔ native اندروید ساخته و Android Studio روی آن باز شده است؛ اما خودِ فرایند ساخت APK و اجرا روی شبیه‌ساز هنوز در این محیط اجرا نشده و باید از داخل Android Studio انجام شود.
 - هیچ کاربر آزمایشی، فروش واقعی، درگاه پرداخت یا سرویس AI متصل وجود ندارد؛ بنابراین شاخصهای SUS و نرخ موفقیت اندازهگیری نشدهاند.
 - `/api/upgrade` تنها شبیهسازی است و `plan_limit_hit` و چرخش نشانه در backlogاند.
 - ESLint تنظیم نشده؛ `typecheck` بهعنوان جایگزین موقت استفاده میشود.
