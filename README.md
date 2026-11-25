@@ -82,6 +82,12 @@ npm run mobile:start   # Metro (باندلر JS)
 
 > آدرس API برای شبیه‌ساز اندروید `http://10.0.2.2:3001` است (از قبل در `apps/mobile/src/lib/api.ts` تنظیم شده). برای گوشی واقعی، `EXPO_PUBLIC_API_URL=http://<IP-شبکهٔ-لپ‌تاپ>:3001` را تنظیم کنید. Gradle 9.4.1 با JDK 25 (همان JBR اندروید استودیو) سازگار است.
 
+### عیب‌یابی بیلد محلی اندروید
+
+- خطای `ninja: error: mkdir(...) No such file or directory`: علت عبور مسیر از سقف ۲۶۰ کاراکتری ویندوز است. راه‌حل: ارتقای `ninja.exe` داخل SDK (مسیر `<SDK>\cmake\3.22.1\bin\ninja.exe`) به نسخهٔ ۱.۱۲ یا بالاتر.
+- قطع‌شدن ناگهانی `Kotlin daemon`: کمبود رم است. در `apps/mobile/android/gradle.properties` مقادیر `org.gradle.parallel=false`، `org.gradle.workers.max=2` و `kotlin.daemon.jvmargs=-Xmx1024m` را تنظیم کنید و هنگام بیلد سنگین، برنامه‌های پرمصرف را ببندید.
+- خروجی `app-debug.apk` پیش‌فرض برای شبیه‌ساز `x86_64` است. برای گوشی واقعی از `-PreactNativeArchitectures=arm64-v8a` استفاده کنید.
+
 ## مستندات
 
 - [`docs/00-roadmap.md`](docs/00-roadmap.md) — نقشۀ مراحل P0–P7
@@ -95,7 +101,7 @@ npm run mobile:start   # Metro (باندلر JS)
 
 ## محدودیتهای صریح
 
-- پروژهٔ native اندروید ساخته و Android Studio روی آن باز شده است؛ اما خودِ فرایند ساخت APK و اجرا روی شبیه‌ساز هنوز در این محیط اجرا نشده و باید از داخل Android Studio انجام شود.
+- یک APK دیباگ برای معماری `x86_64` با موفقیت ساخته شد (۷۳.۶MB)؛ اجرای آن روی شبیه‌ساز/گوشی و ساخت نسخهٔ release امضاشده هنوز انجام نشده است.
 - هیچ کاربر آزمایشی، فروش واقعی، درگاه پرداخت یا سرویس AI متصل وجود ندارد؛ بنابراین شاخصهای SUS و نرخ موفقیت اندازهگیری نشدهاند.
 - `/api/upgrade` تنها شبیهسازی است و `plan_limit_hit` و چرخش نشانه در backlogاند.
 - ESLint تنظیم نشده؛ `typecheck` بهعنوان جایگزین موقت استفاده میشود.
