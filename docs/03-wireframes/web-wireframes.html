@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بشقاب‌یار — وایرفریم وب</title>
+<style>
+  :root {
+    --ink: #303536; --ink-2: #677579; --line: #cfd3d5; --soft: #f2f3f4;
+    --paper: #fff; --dark: #3c4245; --light: #e6e8e9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 24px 64px; background: #eceeef; color: var(--ink);
+    font-family: Tahoma, "Segoe UI", Arial, sans-serif; line-height: 1.6;
+  }
+  .page-head { max-width: 1180px; margin: 0 auto 32px; }
+  h1 { font-size: 24px; margin: 0 0 8px; }
+  .page-head p { margin: 0 0 16px; color: var(--ink-2); font-size: 14px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .swatch { width: 22px; height: 14px; border: 1px solid var(--line); background: var(--soft); display: inline-block; }
+  .swatch.dashed { background: #fff; border-style: dashed; }
+  .swatch.dark { background: var(--dark); border-color: var(--dark); }
+  .frames { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  .frame-title { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+  .frame-title code { direction: ltr; font-size: 11px; font-weight: normal; color: var(--ink-2); }
+  .canvas {
+    background: var(--paper); border: 2px solid #9aa2a5; border-radius: 8px;
+    overflow: hidden; min-height: 520px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
+  }
+  .header {
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; border-bottom: 1px solid var(--line);
+  }
+  .header .brand { font-weight: bold; font-size: 16px; }
+  .header .nav { display: flex; gap: 20px; font-size: 13px; color: var(--ink-2); }
+  .header .tools { display: flex; gap: 12px; font-size: 14px; color: var(--ink-2); }
+  .shell { display: flex; min-height: 456px; }
+  .sidebar {
+    width: 240px; flex: 0 0 240px; border-left: 1px solid var(--line);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #fafbfb;
+  }
+  .sidebar .item { padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; background: #fff; }
+  .sidebar .item.on { background: var(--dark); color: #fff; border-color: var(--dark); }
+  .sidebar .spacer { flex: 1 1 auto; }
+  .main { flex: 1 1 auto; padding: 24px; min-width: 0; }
+  .crumb { font-size: 11px; color: var(--ink-2); margin-bottom: 8px; }
+  .page-title { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; font-size: 18px; font-weight: bold; }
+  .btn { border: 1px solid var(--line); border-radius: 6px; padding: 10px 16px; font-size: 12px; background: var(--soft); color: var(--ink); }
+  .btn.dark { background: var(--dark); color: #fff; border-color: var(--dark); font-weight: bold; }
+  .btn.small { padding: 6px 10px; font-size: 11px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .box {
+    border: 1px solid var(--line); background: var(--soft); border-radius: 6px;
+    padding: 12px; font-size: 12px; color: var(--ink-2); min-height: 72px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+  }
+  .box.dashed { background: #fff; border-style: dashed; }
+  .box.tall { min-height: 140px; flex-direction: column; gap: 8px; justify-content: flex-start; align-items: stretch; text-align: right; }
+  .box.num { font-size: 20px; font-weight: bold; color: var(--ink); }
+  .rows { display: flex; flex-direction: column; gap: 8px; }
+  .tr {
+    display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: center;
+    border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 12px; background: #fff;
+  }
+  .tr.head { background: var(--soft); color: var(--ink-2); font-weight: bold; }
+  .tr .actions { display: flex; gap: 4px; }
+  .form { display: flex; flex-direction: column; gap: 12px; max-width: 620px; }
+  .form .row { display: flex; gap: 8px; }
+  .form .row > * { flex: 1 1 0; }
+  .form .label { font-size: 11px; color: var(--ink-2); }
+  .segment { display: flex; gap: 8px; }
+  .segment .box { min-height: 48px; flex: 1 1 0; }
+  .segment .box.on { background: var(--dark); color: #fff; border-color: var(--dark); }
+  .warning { border: 1px dashed #7c8588; background: #fff; padding: 8px 12px; font-size: 11px; border-radius: 6px; }
+  .hero { padding: 48px 32px; display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+  .hero h2 { font-size: 30px; line-height: 1.4; margin: 0; max-width: 700px; }
+  .hero p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 620px; }
+  .hero .cta { background: var(--dark); color: #fff; border-color: var(--dark); font-weight: bold; padding: 14px 24px; }
+  .bands { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 32px 32px; }
+  .note { font-size: 11px; color: var(--ink-2); margin: 8px 0 0; }
+  @media (max-width: 900px) {
+    .grid3, .bands { grid-template-columns: 1fr; }
+    .sidebar { width: 180px; flex-basis: 180px; }
+    .canvas { min-height: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>بشقاب‌یار — وایرفریم وب</h1>
+  <p>۵ صفحهٔ راستچین با سایدبار سمت راست، هدر ۶۴ پیکسل و گرید ۱۲ ستونه. جعبهٔ تیره = اقدام اصلی، خطچین = دادهٔ پویا.</p>
+  <div class="legend">
+    <span><i class="swatch"></i> عنصر ثابت</span>
+    <span><i class="swatch dashed"></i> محتوای پویا</span>
+    <span><i class="swatch dark"></i> دکمهٔ اصلی</span>
+  </div>
+</header>
+
+<main class="frames">
+
+  <!-- W1 Landing -->
+  <section>
+    <div class="frame-title"><span>۱. صفحهٔ فرود</span><code>/</code></div>
+    <div class="canvas">
+      <div class="header">
+        <span class="brand">بشقاب‌یار</span>
+        <span class="nav">چگونه کار میکند &nbsp; | &nbsp; ویژگیها &nbsp; | &nbsp; قیمت</span>
+        <span class="tools">🔍 &nbsp; 👤 ورود</span>
+      </div>
+      <div class="hero">
+        <h2>غذای ایرانی را بشناس و هوشمندتر انتخاب کن</h2>
+        <p>کالری و درشت مغذی وعدههای روزمره را با واحدهای آشنا ثبت کن و جایگزینی متعادل و مقرونبهصرفه ببین.</p>
+        <div class="btn cta">همین الآن امتحان کن</div>
+        <div class="box dashed">پیشنمایش: ثبت وعده → پیشنهاد → گزارش</div>
+      </div>
+      <div class="bands">
+        <div class="box tall"><span>ثبت در ۳ تاچ</span><span>فهرست ۲۰ غذای ایرانی</span></div>
+        <div class="box tall"><span>هدف + بودجه</span><span>پیشنهاد قابل فهم</span></div>
+        <div class="box tall"><span>محاسبهٔ قطعی</span><span>توضیح AI فقط در Pro</span></div>
+      </div>
+    </div>
+    <p class="note">الگوی Z: لوگو و headline در شروع خط، CTA در میانه، اعتمادسازی در پایین. فقط یک رنگ تأکیدی.</p>
+  </section>
+
+  <!-- W2 Dashboard -->
+  <section>
+    <div class="frame-title"><span>۲. داشبورد</span><code>/app</code></div>
+    <div class="canvas">
+      <div class="header">
+        <span class="brand">بشقاب‌یار</span>
+        <span class="nav">خانه &nbsp; وعدهها &nbsp; گزارش</span>
+        <span class="tools">🔍 &nbsp; 🔔 &nbsp; 👤</span>
+      </div>
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="item on">⌂ &nbsp; خانه</div>
+          <div class="item">＋ &nbsp; وعدهها</div>
+          <div class="item">▥ &nbsp; گزارش</div>
+          <div class="spacer"></div>
+          <div class="item">⚙ &nbsp; تنظیمات</div>
+          <div class="item">⎋ &nbsp; خروج</div>
+        </aside>
+        <div class="main">
+          <div class="crumb">خانه / نمای کلی</div>
+          <div class="page-title"><span>خوش آمدید، سارا</span><span class="btn dark">＋ &nbsp; ثبت وعده</span></div>
+          <div class="grid3">
+            <div class="box num">۱٬۴۸۰ کالری</div>
+            <div class="box num">۶۸ گرم پروتئین</div>
+            <div class="box num">۲۸٬۰۰۰ تومان</div>
+          </div>
+          <div class="box small">وعدههای امروز</div>
+          <div class="rows" style="margin-top:12px">
+            <div class="tr"><span>چلوکباب · ناهار</span><span>۶۲۰ کالری</span><span>۱۸٬۰۰۰ تومان</span><span class="actions"><span class="btn small">✏</span><span class="btn small">🗑</span></span></div>
+            <div class="tr"><span>عدسی · شام</span><span>۳۸۰ کالری</span><span>۱۰٬۰۰۰ تومان</span><span class="actions"><span class="btn small">✏</span><span class="btn small">🗑</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">سایدبار راست؛ دکمهٔ اصلی در انتهای خط عنوان؛ اکشنهای ردیف با hover ظاهر میشوند.</p>
+  </section>
+
+  <!-- W3 Log meal -->
+  <section>
+    <div class="frame-title"><span>۳. ثبت وعده</span><code>POST /api/meals</code></div>
+    <div class="canvas">
+      <div class="header">
+        <span class="brand">بشقاب‌یار</span>
+        <span class="nav">خانه &nbsp; وعدهها &nbsp; گزارش</span>
+        <span class="tools">🔍 &nbsp; 👤</span>
+      </div>
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="item">⌂ &nbsp; خانه</div>
+          <div class="item on">＋ &nbsp; وعدهها</div>
+          <div class="item">▥ &nbsp; گزارش</div>
+          <div class="spacer"></div>
+          <div class="item">⚙ &nbsp; تنظیمات</div>
+          <div class="item">⎋ &nbsp; خروج</div>
+        </aside>
+        <div class="main">
+          <div class="crumb">‹ &nbsp; خانه / ثبت وعده</div>
+          <div class="page-title"><span>ثبت وعده</span><span class="btn dark">ذخیره</span></div>
+          <div class="form">
+            <div class="label">جستجوی غذا</div>
+            <div class="box dashed">🔍 &nbsp; جستجو در فهرست ۲۰ غذای ایرانی</div>
+            <div class="rows">
+              <div class="tr"><span>قرمهسبزی</span><span>۱۸۰ کالری / ۱۰۰g</span><span>۶٬۰۰۰ تومان</span><span class="btn small">انتخاب</span></div>
+              <div class="tr"><span>عدسی</span><span>۱۳۰ کالری / ۱۰۰g</span><span>۴٬۰۰۰ تومان</span><span class="btn small">انتخاب</span></div>
+            </div>
+            <div class="label">واحد سهم</div>
+            <div class="segment"><div class="box on">قاشق</div><div class="box">کفگیر</div><div class="box">بشقاب</div><div class="box">گرم</div></div>
+            <div class="row"><div class="box">تعداد: ۱</div><div class="box">− &nbsp; ＋</div><div class="box">≈ ۲۴۰ گرم</div></div>
+            <div class="box dashed">پیشنمایش محاسبه: ۳۱۰ کالری · ۱۲ گرم پروتئین</div>
+            <div class="warning">خطای درونخطی فارسی در صورت ورودی نامعتبر نمایش داده میشود.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">breadcrumb در بالا، دکمهٔ ذخیره در انتهای خط،segment چهار گزینهای و پیشنمایش عدد قبل از ثبت.</p>
+  </section>
+
+  <!-- W4 Reports -->
+  <section>
+    <div class="frame-title"><span>۴. گزارشها</span><code>GET /api/reports/daily · weekly</code></div>
+    <div class="canvas">
+      <div class="header">
+        <span class="brand">بشقاب‌یار</span>
+        <span class="nav">خانه &nbsp; وعدهها &nbsp; گزارش</span>
+        <span class="tools">🔍 &nbsp; 👤</span>
+      </div>
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="item">⌂ &nbsp; خانه</div>
+          <div class="item">＋ &nbsp; وعدهها</div>
+          <div class="item on">▥ &nbsp; گزارش</div>
+          <div class="spacer"></div>
+          <div class="item">⚙ &nbsp; تنظیمات</div>
+          <div class="item">⎋ &nbsp; خروج</div>
+        </aside>
+        <div class="main">
+          <div class="crumb">خانه / گزارش</div>
+          <div class="page-title"><span>گزارش تغذیهای</span><span class="btn">امروز ▾</span></div>
+          <div class="segment" style="max-width:360px;margin-bottom:16px"><div class="box on">روزانه</div><div class="box">هفته (Pro)</div></div>
+          <div class="box tall"><span>نمودار کالری و درشت مغذیها</span><div class="box dashed">ستونهای روزانه</div></div>
+          <div class="rows" style="margin-top:16px">
+            <div class="tr head"><span>وعده</span><span>کالری</span><span>پروتئین</span><span>قیمت</span></div>
+            <div class="tr"><span>چلوکباب</span><span>۶۲۰</span><span>۳۲ گرم</span><span>۱۸٬۰۰۰</span></div>
+            <div class="tr"><span>عدسی</span><span>۳۸۰</span><span>۱۸ گرم</span><span>۱۰٬۰۰۰</span></div>
+          </div>
+          <div class="row" style="margin-top:16px">
+            <div class="warning">⚠ تمام عددها تخمینی و عمومیاند.</div>
+            <div class="btn dark">ارتقا به Pro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">آمار هفتگی در طرح آزاد قفل است؛ هشدار تخمینی همیشه در کنار جدول قرار دارد.</p>
+  </section>
+
+  <!-- W5 Admin -->
+  <section>
+    <div class="frame-title"><span>۵. پنل مدیریت</span><code>GET /api/admin/overview · events</code></div>
+    <div class="canvas">
+      <div class="header">
+        <span class="brand">بشقاب‌یار — مدیریت</span>
+        <span class="nav">نمای کلی &nbsp; رویدادها</span>
+        <span class="tools">👤 &nbsp; ⎋</span>
+      </div>
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="item on">▥ &nbsp; نمای کلی</div>
+          <div class="item">📋 &nbsp; رویدادها</div>
+          <div class="spacer"></div>
+          <div class="item">⚙ &nbsp; تنظیمات</div>
+        </aside>
+        <div class="main">
+          <div class="crumb">مدیریت / نمای کلی</div>
+          <div class="page-title"><span>نمای کلی</span><span class="btn">فیلتر: امروز ▾</span></div>
+          <div class="grid3">
+            <div class="box num">کاربران</div>
+            <div class="box num">وعدهها</div>
+            <div class="box num">پیشنهادها</div>
+          </div>
+          <div class="box small" style="margin-bottom:12px">جدول رویدادها</div>
+          <div class="rows">
+            <div class="tr head"><span>رویداد</span><span>کاربر</span><span>زمان</span><span>جزئیات</span></div>
+            <div class="tr"><span>meal_logged</span><span>u_012</span><span>۱۴:۳۲</span><span class="btn small">👁</span></div>
+            <div class="tr"><span>suggestion_accepted</span><span>u_007</span><span>۱۴:۲۸</span><span class="btn small">👁</span></div>
+            <div class="tr"><span>upgrade_clicked</span><span>u_003</span><span>۱۴:۱۰</span><span class="btn small">👁</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">تنها سه مقصد در سایدبار؛ جدول رویدادها قابل فیلتر بر اساس نام رویداد و بازهٔ زمانی.</p>
+  </section>
+
+</main>
+</body>
+</html>

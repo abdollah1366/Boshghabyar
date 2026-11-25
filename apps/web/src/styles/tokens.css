@@ -1,0 +1,77 @@
+/* سیستم طراحی بشقاب‌یار — مشتق شده از اسکریپت palette.py (هامونی سهگانه از #0E7490) */
+:root {
+  --primary-50: #F2FAFD;
+  --primary-100: #E1F4FA;
+  --primary-200: #B9EBF8;
+  --primary-300: #86DCF3;
+  --primary-400: #4ECBEE;
+  --primary-500: #20BEE9;
+  --primary-600: #14A5CD;
+  --primary-700: #1087A7;
+  --primary-800: #0E7490;
+  --primary-900: #0F4757;
+  --primary: #0E7490;
+  --on-primary: #FFFFFF;
+
+  --secondary: #B52B98;
+  --on-secondary: #FFFFFF;
+  --accent: #D1390F;
+  --on-accent: #FFFFFF;
+
+  --neutral-50: #F7F8F8;
+  --neutral-100: #ECEEEE;
+  --neutral-200: #D6DADC;
+  --neutral-300: #B7C0C2;
+  --neutral-400: #96A3A6;
+  --neutral-500: #7B8A8E;
+  --neutral-600: #677579;
+  --neutral-700: #546063;
+  --neutral-800: #424B4D;
+  --neutral-900: #303536;
+
+  --success: #22BF5B;
+  --error: #BF2222;
+  --warning: #D08A11;
+  --info: #2270BF;
+
+  --bg: #FFFFFF;
+  --surface: #F7F8F8;
+  --border: #D6DADC;
+  --text: #303536;
+  --text-secondary: #677579;
+  --text-disabled: #96A3A6;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 24px;
+  --text-xl: 32px;
+  --text-2xl: 48px;
+
+  --shadow: 0 8px 24px rgb(15 71 87 / 8%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #303536;
+    --surface: #424B4D;
+    --border: #546063;
+    --text: #F7F8F8;
+    --text-secondary: #B7C0C2;
+    --text-disabled: #7B8A8E;
+    --primary: #86DCF3;
+    --on-primary: #0F4757;
+    --shadow: 0 8px 24px rgb(0 0 0 / 24%);
+  }
+}

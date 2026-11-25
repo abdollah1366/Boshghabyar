@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بشقاب‌یار — وایرفریم موبایل</title>
+<style>
+  :root {
+    --ink: #303536; --ink-2: #677579; --line: #cfd3d5; --soft: #f2f3f4;
+    --paper: #ffffff; --dark: #3c4245; --mid: #8a9498; --light: #e6e8e9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 24px 64px; background: #eceeef; color: var(--ink);
+    font-family: Tahoma, "Segoe UI", Arial, sans-serif; line-height: 1.6;
+  }
+  .page-head { max-width: 1280px; margin: 0 auto 32px; }
+  h1 { font-size: 24px; margin: 0 0 8px; }
+  .page-head p { margin: 0 0 16px; color: var(--ink-2); font-size: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .swatch { width: 22px; height: 14px; border: 1px solid var(--line); background: var(--soft); display: inline-block; }
+  .swatch.dashed { border-style: dashed; background: #fff; }
+  .swatch.dark { background: var(--dark); border-color: var(--dark); }
+  .grid {
+    max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap;
+    gap: 32px 24px; justify-content: center; align-items: flex-start;
+  }
+  .frame { width: 375px; }
+  .frame-title {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+    font-size: 14px; font-weight: bold; margin-bottom: 8px;
+  }
+  .frame-title code { font-size: 11px; font-weight: normal; color: var(--ink-2); direction: ltr; }
+  .phone {
+    width: 375px; height: 812px; background: var(--paper);
+    border: 2px solid #9aa2a5; border-radius: 24px; overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  }
+  .status {
+    height: 24px; flex: 0 0 24px; display: flex; justify-content: space-between;
+    align-items: center; padding: 0 16px; font-size: 10px; color: var(--ink-2);
+    border-bottom: 1px solid var(--light);
+  }
+  .appbar {
+    height: 56px; flex: 0 0 56px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--light);
+  }
+  .appbar .title { font-weight: bold; font-size: 16px; }
+  .appbar .tools { display: flex; gap: 12px; color: var(--ink-2); font-size: 14px; }
+  .screen { flex: 1 1 auto; padding: 16px; overflow: hidden; }
+  .box {
+    border: 1px solid var(--line); background: var(--soft); border-radius: 8px;
+    padding: 12px; font-size: 12px; color: var(--ink-2); min-height: 40px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+  }
+  .box.dashed { background: #fff; border-style: dashed; }
+  .box.dark { background: var(--dark); color: #fff; border-color: var(--dark); font-weight: bold; }
+  .box.tall { min-height: 96px; flex-direction: column; gap: 8px; align-items: stretch; justify-content: flex-start; text-align: right; }
+  .box.small { min-height: 32px; padding: 6px 10px; font-size: 11px; }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+  .stack.tight { gap: 8px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1 1 0; }
+  .row.grow2 > :first-child { flex: 2 1 0; }
+  .hero-card { min-height: 120px; display: flex; flex-direction: column; gap: 8px; }
+  .hero-number { font-size: 28px; font-weight: bold; color: var(--ink); }
+  .progress { height: 8px; border-radius: 4px; background: var(--light); overflow: hidden; }
+  .progress i { display: block; height: 100%; width: 65%; background: var(--dark); }
+  .list-item {
+    border: 1px solid var(--line); background: #fff; border-radius: 8px;
+    padding: 12px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; min-height: 56px;
+  }
+  .list-item .meta { color: var(--ink-2); font-size: 11px; }
+  .chev { color: var(--ink-2); font-size: 18px; }
+  .segment { display: flex; gap: 8px; }
+  .segment .box { flex: 1 1 0; min-height: 48px; }
+  .segment .box.on { background: var(--mid); color: #fff; border-color: var(--mid); }
+  .cta { margin-top: 16px; min-height: 48px; }
+  .fab {
+    position: absolute; left: 16px; bottom: 96px; width: 56px; height: 56px;
+    border-radius: 50%; background: var(--dark); color: #fff; display: flex;
+    align-items: center; justify-content: center; font-size: 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .nav {
+    height: 80px; flex: 0 0 80px; border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-around;
+    background: #fff; padding: 0 4px;
+  }
+  .nav div { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: var(--ink-2); }
+  .nav div i { font-style: normal; font-size: 18px; }
+  .nav div.on { color: var(--ink); font-weight: bold; }
+  .nav div.on i { color: var(--dark); }
+  .note { font-size: 11px; color: var(--ink-2); margin: 8px 0 0; }
+  .warning { border: 1px dashed #7c8588; background: #fff; padding: 8px; font-size: 11px; color: var(--ink); }
+  .phone-wrap { position: relative; }
+  @media (max-width: 640px) { body { padding: 16px 8px 40px; } }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>بشقاب‌یار — وایرفریم موبایل</h1>
+  <p>۶ صفحهٔ اندروید، قاب ۳۷۵×۸۱۲ پیکسل، کاملاً راستچین. جعبهٔ تیره = اقدام اصلی، جعبهٔ خطچین = دادهٔ پویا از API.</p>
+  <div class="legend">
+    <span><i class="swatch"></i> عنصر ثابت</span>
+    <span><i class="swatch dashed"></i> محتوای پویا</span>
+    <span><i class="swatch dark"></i> دکمهٔ اصلی</span>
+  </div>
+</header>
+
+<main class="grid">
+
+  <!-- 1. Login -->
+  <section class="frame">
+    <div class="frame-title"><span>۱. ورود</span><code>POST /api/auth/login</code></div>
+    <div class="phone-wrap">
+    <div class="phone">
+      <div class="status"><span>۹:۴۱</span><span>▮▮▮</span></div>
+      <div class="appbar"><span class="title">بشقاب‌یار</span><span class="tools">جعبهٔ لوگو</span></div>
+      <div class="screen">
+        <div class="stack">
+          <div class="box tall"><span>خوش آمدید</span><span>ورود به حساب خود</span></div>
+          <div class="stack tight">
+            <div class="box small">برچسب: شماره موبایل</div>
+            <div class="box dashed">ورودی ۰۹۱۲xxxxxxx</div>
+            <div class="box small">برچسب: رمز عبور</div>
+            <div class="box dashed">ورودی رمز ⋯ 👁</div>
+            <div class="box small">خطای درونخطی فارسی</div>
+          </div>
+          <div class="box dark cta">ورود</div>
+          <div class="box small">حساب ندارید؟ ثبتنام</div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <p class="note">برچسبها بیرون فیلداند؛ دکمهٔ ورود تنها اقدام اصلی در ناحیهٔ شست است.</p>
+  </section>
+
+  <!-- 2. Home -->
+  <section class="frame">
+    <div class="frame-title"><span>۲. خانه / خلاصهٔ روز</span><code>GET /api/reports/daily</code></div>
+    <div class="phone-wrap">
+    <div class="phone">
+      <div class="status"><span>۹:۴۱</span><span>▮▮▮</span></div>
+      <div class="appbar"><span class="title">بشقاب‌یار</span><span class="tools">🔍 &nbsp; 🔔</span></div>
+      <div class="screen">
+        <div class="stack">
+          <div class="box small">امروز، ۲۵ آبان</div>
+          <div class="box tall hero-card">
+            <span class="hero-number">۱٬۴۸۰ / ۲٬۰۰۰</span>
+            <span>کالری مصرفشده</span>
+            <div class="progress"><i></i></div>
+            <span class="small">۲ وعده ثبتشده</span>
+          </div>
+          <div class="box small">وعدههای امروز</div>
+          <div class="list-item"><span>چلوکباب <span class="meta">· ۶۲۰ کالری</span></span><span class="chev">‹</span></div>
+          <div class="list-item"><span>عدسی <span class="meta">· ۳۸۰ کالری</span></span><span class="chev">‹</span></div>
+          <div class="box dashed">ادامهٔ لیست وعدهها</div>
+        </div>
+        <div class="fab">＋</div>
+      </div>
+      <div class="nav"><div class="on"><i>⌂</i>خانه</div><div><i>＋</i>ثبت وعده</div><div><i>▥</i>گزارش</div><div><i>☺</i>نمایه</div></div>
+    </div>
+    </div>
+    <p class="note">کارت خلاصه در بالا (خروجی) و FAB ثبت در ناحیهٔ شست؛ نوار پیشروی از راست پر میشود.</p>
+  </section>
+
+  <!-- 3. Log meal -->
+  <section class="frame">
+    <div class="frame-title"><span>۳. ثبت وعده</span><code>GET /api/foods · POST /api/meals</code></div>
+    <div class="phone-wrap">
+    <div class="phone">
+      <div class="status"><span>۹:۴۱</span><span>▮▮▮</span></div>
+      <div class="appbar"><span class="title">→ &nbsp; ثبت وعده</span><span class="tools">گام ۲ از ۳</span></div>
+      <div class="screen">
+        <div class="stack">
+          <div class="progress"><i style="width:66%"></i></div>
+          <div class="box small">جستجوی غذا</div>
+          <div class="box dashed">قرمهسبزی &nbsp; 🔍</div>
+          <div class="box small">واحد سهم</div>
+          <div class="segment">
+            <div class="box on">قاشق</div><div class="box">کفگیر</div><div class="box">بشقاب</div><div class="box">گرم</div>
+          </div>
+          <div class="row">
+            <div class="box small">تعداد: ۱</div>
+            <div class="box small">− &nbsp; ＋</div>
+          </div>
+          <div class="box dashed">≈ ۲۴۰ گرم · ۳۱۰ کالری · ۱۲٬۰۰۰ تومان</div>
+          <div class="warning">عددها تخمینیاند و از جدول غذا محاسبه شدهاند.</div>
+          <div class="box dark cta">ثبت وعده</div>
+        </div>
+      </div>
+      <div class="nav"><div><i>⌂</i>خانه</div><div class="on"><i>＋</i>ثبت وعده</div><div><i>▥</i>گزارش</div><div><i>☺</i>نمایه</div></div>
+    </div>
+    </div>
+    <p class="note">بازگشت آینهشده در بالا-راست؛ چهار گزینهٔ سهم بهصورتsegment، نه dropdown.</p>
+  </section>
+
+  <!-- 4. Suggestions -->
+  <section class="frame">
+    <div class="frame-title"><span>۴. پیشنهادها</span><code>GET /api/recommendations/:mealId</code></div>
+    <div class="phone-wrap">
+    <div class="phone">
+      <div class="status"><span>۹:۴۱</span><span>▮▮▮</span></div>
+      <div class="appbar"><span class="title">→ &nbsp; جایگزینها</span><span class="tools">هدف: متعادل</span></div>
+      <div class="screen">
+        <div class="stack">
+          <div class="box small">سقف هزینه: ۴۰٬۰۰۰ تومان</div>
+          <div class="box tall">
+            <span>عدسی &nbsp; ✅</span>
+            <span>۳۱۰ کالری · ۱۸ گرم پروتئین</span>
+            <span>۱۲٬۰۰۰ تومان</span>
+            <div class="box dark small">جایگزین کن</div>
+          </div>
+          <div class="box tall">
+            <span>آش رشته</span>
+            <span>۴۲۰ کالری · ۱۴ گرم پروتئین</span>
+            <span>۹٬۰۰۰ تومان</span>
+            <div class="box small">جایگزین کن</div>
+          </div>
+          <div class="box dashed">توضیح متنی (فقط Pro)</div>
+          <div class="box dark cta">ثبت همین وعده</div>
+        </div>
+      </div>
+      <div class="nav"><div><i>⌂</i>خانه</div><div class="on"><i>＋</i>ثبت وعده</div><div><i>▥</i>گزارش</div><div><i>☺</i>نمایه</div></div>
+    </div>
+    </div>
+    <p class="note">تیک سبز معنای «مناسب هدف» دارد؛ توضیح هوش مصنوعی جدا از عدد قطعی نمایش داده میشود.</p>
+  </section>
+
+  <!-- 5. Report -->
+  <section class="frame">
+    <div class="frame-title"><span>۵. گزارش</span><code>GET /api/reports/daily · weekly</code></div>
+    <div class="phone-wrap">
+    <div class="phone">
+      <div class="status"><span>۹:۴۱</span><span>▮▮▮</span></div>
+      <div class="appbar"><span class="title">→ &nbsp; گزارش امروز</span><span class="tools">⋯</span></div>
+      <div class="screen">
+        <div class="stack">
+          <div class="segment"><div class="box on">امروز</div><div class="box">هفته (Pro)</div></div>
+          <div class="box tall hero-card">
+            <span>کالری و درشت مغذیها</span>
+            <div class="box dashed">نمودار سادهٔ ۷ روز</div>
+            <span class="meta">۱٬۴۸۰ از ۲٬۰۰۰ کالری</span>
+          </div>
+          <div class="list-item"><span>صبحانه · نان و پنیر</span><span class="chev">‹</span></div>
+          <div class="list-item"><span>ناهار · چلوکباب</span><span class="chev">‹</span></div>
+          <div class="warning">⚠ اعداد تخمینیاند و جایگزین توصیۀ پزشکی نیستند.</div>
+          <div class="box dark cta">ارتقا به Pro</div>
+        </div>
+      </div>
+      <div class="nav"><div><i>⌂</i>خانه</div><div><i>＋</i>ثبت وعده</div><div class="on"><i>▥</i>گزارش</div><div><i>☺</i>نمایه</div></div>
+    </div>
+    </div>
+    <p class="note">تب «هفته» در طرح آزاد قفل است؛ دکمهٔ ارتقا تنها اقدام اصلی این صفحه است.</p>
+  </section>
+
+  <!-- 6. Profile -->
+  <section class="frame">
+    <div class="frame-title"><span>۶. نمایه / ارتقا</span><code>GET /api/me · POST /api/upgrade</code></div>
+    <div class="phone-wrap">
+    <div class="phone">
+      <div class="status"><span>۹:۴۱</span><span>▮▮▮</span></div>
+      <div class="appbar"><span class="title">☺ &nbsp; نمایه</span><span class="tools">⚙</span></div>
+      <div class="screen">
+        <div class="stack">
+          <div class="row">
+            <div class="box small">هدف: متعادل</div>
+            <div class="box small">بودجه: ۴۰٬۰۰۰</div>
+          </div>
+          <div class="box tall">
+            <span>طرح فعلی: آزاد</span>
+            <span>۲۰ غذا · ۷ روز تاریخچه</span>
+            <div class="box dark small">ارتقا به Pro (شبیهسازی)</div>
+          </div>
+          <div class="box">تنظیمات ⚙</div>
+          <div class="box">حریم خصوصی 🔒</div>
+          <div class="box">توضیح دربارهٔ تخمینی بودن اعداد</div>
+          <div class="box">خروج از حساب</div>
+        </div>
+      </div>
+      <div class="nav"><div><i>⌂</i>خانه</div><div><i>＋</i>ثبت وعده</div><div><i>▥</i>گزارش</div><div class="on"><i>☺</i>نمایه</div></div>
+    </div>
+    </div>
+    <p class="note">خروج در انتهای فهرست و با رنگ خطا؛ ارتقا پرداخت واقعی نیست.</p>
+  </section>
+
+</main>
+</body>
+</html>

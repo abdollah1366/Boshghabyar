@@ -1,0 +1,37 @@
+{
+  "name": "boshghabyar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "بشقاب‌یار — ثبت وعده، محاسبه ارزش غذایی و پیشنهاد متعادل/اقتصادی",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "core:build": "npm run build -w @boshghabyar/core",
+    "core:test": "npm run test -w @boshghabyar/core",
+    "api:dev": "npm run dev -w @boshghabyar/api",
+    "api:build": "npm run build -w @boshghabyar/api",
+    "smoke": "node scripts/smoke.mjs",
+    "web:dev": "npm run dev -w @boshghabyar/web",
+    "web:build": "npm run build -w @boshghabyar/web",
+    "mobile:start": "npm run start -w @boshghabyar/mobile",
+    "mobile:typecheck": "npm run typecheck -w @boshghabyar/mobile",
+    "typecheck": "npm run typecheck -w @boshghabyar/core && npm run typecheck -w @boshghabyar/api && npm run typecheck -w @boshghabyar/web && npm run typecheck -w @boshghabyar/mobile",
+    "build": "npm run core:build && npm run api:build && npm run web:build",
+    "test": "npm run core:build && npm run core:test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}
