@@ -6,13 +6,13 @@
 
 ## ۱. محصول چیست؟
 
-**بشقاب‌یار** یک MVP کامل (از نیازسنجی تا ارزیابی فنی/امنیتی/شناختی) است که ثبت سریع وعدهٔ غذا، محاسبهٔ ارزش تغذیهای (کالری، پروتئین، کربوهیدرات، چربی، فیبر) و ارائهٔ پیشنهاد جایگزین متعادل/اقتصادی را با **رابط فارسی و راستچین** برای وب و اندروید فراهم میکند.
+**بشقاب‌یار** یک MVP کامل (از نیازسنجی تا ارزیابی فنی/امنیتی/شناختی) است که ثبت سریع وعدهٔ غذا، محاسبهٔ ارزش تغذیه‌ای (کالری، پروتئین، کربوهیدرات، چربی، فیبر) و ارائهٔ پیشنهاد جایگزین متعادل/اقتصادی را با **رابط فارسی و راست‌چین** برای وب و اندروید فراهم می‌کند.
 
 - نویسنده: **عبدالله براتی** — دانشگاه علوم پزشکی تبریز، دانشکدهٔ مدیریت و انفورماتیک پزشکی
 - برگزیدهٔ **استارتاپ ویکند غذا و تغذیهٔ تبریز ۱۴۰۵** (از ۲۲ طرح منتخب)
-- اصل کلیدی: **تمام محاسبات تعیینپذیر (deterministic) و قابل توضیح** هستند؛ هیچ مدل زبانی عددی تولید نمیکند. AI (در صورت اتصال) فقط متن توضیحی تولید میکند.
-- محدودیت‌ها (طرح آزاد vs حرفهای) **صرفاً در سرور** اعمال میشوند.
-- اعداد تغذیهای و قیمتها تخمینی‌اند.
+- اصل کلیدی: **تمام محاسبات تعیین‌پذیر (deterministic) و قابل توضیح** هستند؛ هیچ مدل زبانی عددی تولید نمی‌کند. AI (در صورت اتصال) فقط متن توضیحی تولید می‌کند.
+- محدودیت‌ها (طرح آزاد vs حرفه‌ای) **صرفاً در سرور** اعمال می‌شوند.
+- اعداد تغذیه‌ای و قیمت‌ها تخمینی‌اند.
 
 مخزن عمومی: `https://github.com/abdollah1366/Boshghabyar`
 
@@ -20,7 +20,7 @@
 
 ## ۲. ساختار کلی مخزن (Monorepo)
 
-مخزن با **npm workspaces** مدیریت میشود:
+مخزن با **npm workspaces** مدیریت می‌شود:
 
 ```json
 "workspaces": ["packages/*", "apps/*"]
@@ -30,9 +30,9 @@
 
 | مسیر | نام | نوع | توضیح |
 |---|---|---|---|
-| `packages/core` | `@boshghabyar/core` | کتابخانهٔ خالص (TS) | منطق تعیینپذیر: غذاها، محاسبات، پیشنهاد، قواعد طرح |
+| `packages/core` | `@boshghabyar/core` | کتابخانهٔ خالص (TS) | منطق تعیین‌پذیر: غذاها، محاسبات، پیشنهاد، قواعد طرح |
 | `apps/api` | `@boshghabyar/api` | سرویس Node/Express | API REST + SQLite + JWT + zod |
-| `apps/web` | `@boshghabyar/web` | وباپ React + Vite | رابط وب راستچین |
+| `apps/web` | `@boshghabyar/web` | وب‌اپ React + Vite | رابط وب راست‌چین |
 | `apps/mobile` | `@boshghabyar/mobile` | Expo / React Native SDK 58 | پیادهسازی قدیمی (صرفاً مرجع) |
 | `apps/android` | — | Gradle / Kotlin | **مشتری اصلی اندروید (Kotlin + Compose)** |
 | `docs/` | — | مستندات | نیازسنجی، طراحی، وایرفریم، معماری، ارزیابی‌ها |
@@ -68,7 +68,7 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **@boshghabyar/core** مرجع واحد محاسبات است؛ هم سرور و هم کلاینت‌ها از آن استفاده میکنند.
+- **@boshghabyar/core** مرجع واحد محاسبات است؛ هم سرور و هم کلاینت‌ها از آن استفاده می‌کنند.
 - **سرویس AI** متصل نیست؛ `/api/upgrade` شبیهسازی است؛ هیچ درگاه پرداخت نیست.
 
 ---
@@ -79,7 +79,7 @@
 
 | فایل | محتوا |
 |---|---|
-| `src/types.ts` | تایپ‌های دامنه: `Plan`, `GoalType`, `MealType`, `Macros`, `Serving`, `Food`, `MealEntry`, `UserGoal`, `DaySummary`, `SuggestionKind`, `Suggestion`, `MealLogInput` + ثابتهای `EMPTY_MACROS`, `DEFAULT_GOAL` |
+| `src/types.ts` | تایپ‌های دامنه: `Plan`, `GoalType`, `MealType`, `Macros`, `Serving`, `Food`, `MealEntry`, `UserGoal`, `DaySummary`, `SuggestionKind`, `Suggestion`, `MealLogInput` + ثابت‌های `EMPTY_MACROS`, `DEFAULT_GOAL` |
 | `src/foods.ts` | `FOODS: Food[]` (۲۵ غذا)، `FOODS_BY_ID`, `FREE_FOODS` (۲۰ غذای رایگان) |
 | `src/nutrition.ts` | محاسبات: `scaleMacros`, `entryNutrition`, `entryPrice`, `summarizeDay`, `buildTrend`, `suggestAlternatives`, `reasonFor`, `buildExplanationPrompt` |
 | `src/plan.ts` | `Feature`, `PlanLimits`, `PLAN_LIMITS`, `hasFeature`, `historyCutoffDate`, `isPlan` |
@@ -107,7 +107,7 @@ npm run core:build && npm run core:test   # 7/7
 
 - Node 24 + Express 4 + TypeScript + **`node:sqlite`** (`DatabaseSync`) + JWT (jsonwebtoken) + bcryptjs + zod 4
 - امنیت: `helmet`, `cors`, `express-rate-limit`
-- پورت پیشفرض: `3001`
+- پورت پیش‌فرض: `3001`
 
 ### متغیرهای محیطی (`.env.example`)
 
@@ -119,8 +119,8 @@ CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 DATABASE_PATH=./data/boshghabyar.db
 ```
 
-- در `production` بدون `JWT_SECRET` سرور راه‌اندازی نمیشود.
-- DB پیشفرض: `apps/api/data/boshghabyar.db` (gitignored).
+- در `production` بدون `JWT_SECRET` سرور راه‌اندازی نمی‌شود.
+- DB پیش‌فرض: `apps/api/data/boshghabyar.db` (gitignored).
 
 ### دیتابیس (SQLite)
 
@@ -148,13 +148,13 @@ Seed هنگام خالی بودن جدول `users`:
 | متد | مسیر | احراز | توضیح |
 |---|---|---|---|
 | GET | `/api/health` | — | سلامت سرویس |
-| POST | `/api/auth/register` | authLimiter | ثبتنام |
+| POST | `/api/auth/register` | authLimiter | ثبت‌نام |
 | POST | `/api/auth/login` | authLimiter | ورود |
 | GET | `/api/me` | authRequired | پروفایل کاربر |
 | PATCH | `/api/me/goal` | authRequired | ذخیرهٔ اهداف |
 | GET | `/api/foods` | authRequired | لیست غذاها (فیلتر طرح) |
 | POST | `/api/foods/custom` | authRequired | غذای سفارشی (Pro) |
-| GET | `/api/meals` | authRequired | وعدهها (فیلتر تاریخچه) |
+| GET | `/api/meals` | authRequired | وعده‌ها (فیلتر تاریخچه) |
 | POST | `/api/meals` | authRequired | ثبت وعده |
 | DELETE | `/api/meals/:id` | authRequired | حذف وعده |
 | GET | `/api/reports/daily` | authRequired | خلاصهٔ روز |
@@ -174,7 +174,7 @@ Seed هنگام خالی بودن جدول `users`:
 
 ---
 
-## ۶. وباپ (apps/web)
+## ۶. وب‌اپ (apps/web)
 
 ### تکنولوژی
 
@@ -182,12 +182,12 @@ Seed هنگام خالی بودن جدول `users`:
 - فونت Vazirmatn از `@fontsource/vazirmatn`
 - RTL: CSS tokens + `direction: rtl` در `tokens.css`
 
-### صفحهها
+### صفحه‌ها
 
 | مسیر | کامپوننت | توضیح |
 |---|---|---|
 | `/` | `Landing` / `Dashboard` | لندینگ یا داشبورد (بر اساس لاگین) |
-| `/login` | `Login` | ورود/ثبتنام |
+| `/login` | `Login` | ورود/ثبت‌نام |
 | `/log` | `LogMeal` | ثبت وعده |
 | `/suggestions` | `Suggestions` | پیشنهادها |
 | `/reports` | `Reports` | گزارش هفتگی |
@@ -206,7 +206,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? '';
 ## ۷. کلاینت قدیمی Expo (apps/mobile) — مرجع
 
 - Expo SDK 58، React Native 0.88.1، Expo Router
-- صفحهها: `login`, `(app)/index`, `log`, `profile`, `reports`, `suggestions`
+- صفحه‌ها: `login`, `(app)/index`, `log`, `profile`, `reports`, `suggestions`
 - ذخیرهٔ توکن: `expo-secure-store` (کلید `boshghabyar_session`)
 - RTL: پلاگین `expo-localization` با `forcesRTL: true`
 - API base: `http://10.0.2.2:3001` (شبیهساز) یا `EXPO_PUBLIC_API_URL`
@@ -234,19 +234,19 @@ const API_BASE = import.meta.env.VITE_API_URL ?? '';
 | `MainActivity.kt` | نقطهٔ ورود Compose + MaterialTheme (فونت Vazirmatn) |
 | `Models.kt` | مدل‌های JSON + برچسب‌های فارسی + `MEAL_LABELS` + `GOAL_LABELS` |
 | `Navigation.kt` | `NavHost`، محافظت مسیرها، نوار پایین RTL، `BoshghabYarApp` |
-| `Screens.kt` | تمام صفحهها |
+| `Screens.kt` | تمام صفحه‌ها |
 | `SessionStore.kt` | ذخیرهٔ JWT در EncryptedSharedPreferences |
 | `Theme.kt` | رنگ‌ها، فونت، کامپوننت‌های مشترک (Card, Button, Metric, ProgressRow, Field, …) |
 
-### نگاشت صفحهها
+### نگاشت صفحه‌ها
 
-| صفحه | مسیر | رفتار حفظشده |
+| صفحه | مسیر | رفتار حفظ‌شده |
 |---|---|---|
-| ورود/ثبتنام/ورود آزمایشی | `login` | متون، اعتبارسنجی سرور، رویداد `ui.login_completed` / `ui.register_completed` |
-| خانه | `home` | خلاصهٔ روز، ۴ شاخص، ۵ نوار پیشرفت، وعدههای اخیر، اعداد فارسی برای هزینه |
+| ورود/ثبت‌نام/ورود آزمایشی | `login` | متون، اعتبارسنجی سرور، رویداد `ui.login_completed` / `ui.register_completed` |
+| خانه | `home` | خلاصهٔ روز، ۴ شاخص، ۵ نوار پیشرفت، وعده‌های اخیر، اعداد فارسی برای هزینه |
 | ثبت وعده | `log` | انتخاب غذا، وزن، نوع وعده، تخمین کالری، ارسال + جایگزین‌ها |
 | گزارش‌ها | `reports` | روند ۷ روزه، میانگین، روزهای فعال، دکمهٔ ارتقای Pro |
-| نمایه | `profile` | ویرایش ۶ هدف تغذیهای، نوع هدف، اشتراک، خروج |
+| نمایه | `profile` | ویرایش ۶ هدف تغذیه‌ای، نوع هدف، اشتراک، خروج |
 | پیشنهادها | `suggestions` | لیست وعده‌ها + محاسبهٔ جایگزین با کلیک |
 
 رویدادهای `page.viewed` دقیقاً همان مقادیر (`home`, `log_meal`, `reports`, `suggestions`).
@@ -254,9 +254,9 @@ const API_BASE = import.meta.env.VITE_API_URL ?? '';
 ### پیکربندی بیلد
 
 - `applicationId`: `ir.boshghabyar.app` (همان نسخهٔ RN — قبل از نصب باید نسخهٔ قدیمی پاک شود)
-- `apiBaseUrl` پیشفرض: `http://82.115.17.7:3001` (قابل override با `-PapiBaseUrl`)
+- `apiBaseUrl` پیش‌فرض: `http://82.115.17.7:3001` (قابل override با `-PapiBaseUrl`)
 - `usesCleartextTraffic=true` (چون API روی HTTP است)
-- Release با **debug keystore** امضا میشود (پایلوت)
+- Release با **debug keystore** امضا می‌شود (پایلوت)
 - فونت Vazirmatn محلی: `res/font/vazirmatn_regular.ttf`, `vazirmatn_bold.ttf`
 - چک متادیتای AAR غیرفعال شده (Compose 1.13 نیاز به API 37.1 دارد، SDK محلی فقط 37.0)
 
@@ -281,7 +281,7 @@ $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
 - **اندروید (Kotlin)**: `CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl)` + فونت Vazirmatn از `res/font`
 - **اندروید (Expo)**: پلاگین `expo-localization` با `forcesRTL: true`
 - اعداد فارسی: فقط در چند نقطه (مثلاً هزینهٔ روز در home) با `toLocaleString('fa-IR')` / `faNumber`
-- آیکون‌های جهتدار آینهای (AutoMirrored)
+- آیکون‌های جهتدار آینه‌ای (AutoMirrored)
 
 ---
 
@@ -294,7 +294,7 @@ $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
   - Expo: `expo-secure-store` (`boshghabyar_session`)
   - Kotlin: `EncryptedSharedPreferences` (Android Keystore)
 - **سرور**: helmet, CORS محدود, rate-limit (کلی ۵۰۰/۱۵min، auth ۳۰/۱۵min), zod validation, 64kb body limit
-- **محدودیت‌های طرح**: سمت سرور (client فقط دکمهٔ ارتقا نمایش میدهد)
+- **محدودیت‌های طرح**: سمت سرور (client فقط دکمهٔ ارتقا نمایش می‌دهد)
 - **SQL**: پارامتریزه (بدون string concat)
 - **گزارش امنیت**: `docs/08-security-evaluation.md`
 
@@ -308,7 +308,7 @@ $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
 |---|---|---|
 | `page.viewed` | home, log, reports, suggestions | `{ page: '...' }` |
 | `ui.login_completed` | login (ورود) | `{}` |
-| `ui.register_completed` | login (ثبتنام) | `{}` |
+| `ui.register_completed` | login (ثبت‌نام) | `{}` |
 
 رویدادهای سرور: `user.registered`, `user.logged_in`, `goal.updated`, `meal.created`, `custom_food.created`, `meal.deleted`, `recommendation.viewed`, `plan.upgraded`, `system.seeded`.
 
@@ -319,7 +319,7 @@ $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
 ```bash
 npm install                 # نصب workspaceها
 npm run api:dev             # API روی http://localhost:3001
-npm run web:dev             # وباپ روی http://localhost:5173
+npm run web:dev             # وب‌اپ روی http://localhost:5173
 npm run mobile:start        # Expo Dev Server
 
 npm run typecheck           # 4 workspace — 0 خطا
@@ -337,7 +337,7 @@ npm run smoke               # 22/22 بررسی API (SERVER باید در حال 
 - سرور: `82.115.17.7`، API روی پورت `3001`
 - `apps/api/.env` (gitignored) با `NODE_ENV=production`, `JWT_SECRET` (۶۴ کاراکتر), `CORS_ORIGIN=http://82.115.17.7:3001,http://82.115.17.7:5173`
 - فایروال: قانون `BoshghabYar API 3001`
-- API از طریق `npm run api:dev` در حالت production اجرا میشود (برای persistence نیاز به service manager مثل pm2/NSSM)
+- API از طریق `npm run api:dev` در حالت production اجرا می‌شود (برای persistence نیاز به service manager مثل pm2/NSSM)
 - `http://82.115.17.7:3001/api/health` قابل دسترسی خارجی است
 
 ---
@@ -351,7 +351,7 @@ npm run smoke               # 22/22 بررسی API (SERVER باید در حال 
 - ESLint تنظیم نشده؛ `typecheck` جایگزین موقت است.
 - سه هشدار `moderate` در زنجیرهٔ ابزار Expo (`minimatch` ← `@expo/fingerprint`) باقیاند.
 - چک متادیتای AAR در بیلد اندروید غیرفعال است (SDK محلی فقط 37.0 دارد).
-- `EncryptedSharedPreferences` و `MasterKey` در AndroidX Security Crypto deprecated هستند (ولی کار میکنند).
+- `EncryptedSharedPreferences` و `MasterKey` در AndroidX Security Crypto deprecated هستند (ولی کار می‌کنند).
 
 ---
 

@@ -27,8 +27,8 @@ export default function ReportsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>گزارشها</Text>
-      <Text style={styles.subtitle}>روند هفت روزه کالری و وعدهها</Text>
+      <Text style={styles.title}>گزارش‌ها</Text>
+      <Text style={styles.subtitle}>روند هفت روزه کالری و وعده‌ها</Text>
       {error && <Text style={styles.error}>{error}</Text>}
       {!data && <Text style={styles.subtitle}>در حال بارگذاری…</Text>}
 
@@ -50,7 +50,7 @@ export default function ReportsScreen() {
             </View>
             <Text style={styles.insight}>{data.insight}</Text>
           </Card>
-          {user?.plan === 'free' && <Button title="ارتقا به حرفهای" variant="accent" onPress={() => void upgrade()} />}
+          {user?.plan === 'free' && <Button title="ارتقا به حرفه‌ای" variant="accent" onPress={() => void upgrade()} />}
         </>
       )}
     </ScrollView>

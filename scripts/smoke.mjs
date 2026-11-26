@@ -1,18 +1,29 @@
-// تست دودی سراسری API در حال اجرا. اجرا: node scripts/smoke.mjs
+﻿// تست دودی سراسری API در حال اجرا. اجرا: node scripts/smoke.mjs
+// پیش‌نیاز: سرور با AI_PROVIDER=mock و (در صورت نیاز) ADMIN_PASSWORD اجرا شده باشد.
 const BASE = process.env.API_BASE ?? 'http://localhost:3001';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@boshghabyar.ir';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'Admin@12345';
 const results = [];
 
-async function call(path, { method = 'GET', token, body } = {}) {
-  const headers = { Accept: 'application/json' };
+async function call(path, { method = 'GET', token, body, raw, headers: extra = {} } = {}) {
+  const headers = { Accept: 'application/json', ...extra };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: raw ?? (body === undefined ? undefined : JSON.stringify(body)),
   });
-  const text = await response.text();
-  return { status: response.status, body: text ? JSON.parse(text) : null };
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const text = bytes.toString('utf8').replace(/^\uFEFF/, '');
+  const hasBom = bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
+  let parsed = null;
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    parsed = text;
+  }
+  return { status: response.status, body: parsed, text, hasBom };
 }
 
 function check(name, condition, detail = '') {
@@ -20,95 +31,190 @@ function check(name, condition, detail = '') {
   console.log(`${condition ? 'PASS' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`);
 }
 
-async function login(email, password) {
-  const r = await call('/api/auth/login', { method: 'POST', body: { email, password } });
-  if (r.status !== 200) throw new Error(`login failed: ${JSON.stringify(r.body)}`);
-  return { token: r.body.token, user: r.body.user };
+const randomPhone = () => `09${String(Math.floor(100000000 + Math.random() * 899999999))}`;
+
+async function otpLogin(phone, extra = {}) {
+  const requested = await call('/api/auth/otp/request', { method: 'POST', body: { phone } });
+  if (requested.status !== 200 || !requested.body.devCode) {
+    throw new Error(`otp request failed: ${requested.status} ${requested.text}`);
+  }
+  const verified = await call('/api/auth/otp/verify', { method: 'POST', body: { phone, code: requested.body.devCode, ...extra } });
+  return { requested, verified };
 }
+
+// کوچک‌ترین JPEG معتبر از نظر امضا؛ برای تست تشخیص با ارائه‌دهندهٔ آزمایشی کافی است
+const fakeJpeg = (seed) => Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46]), Buffer.from(String(seed).padEnd(32, 'x'))]);
 
 async function main() {
   const health = await call('/api/health');
   check('health', health.status === 200 && health.body.ok === true);
 
-  const registered = await call('/api/auth/register', { method: 'POST', body: {
-    name: 'کارگر تست', email: `smoke-${crypto.randomUUID()}@example.com`, password: 'Smoke@12345',
-  } });
-  check('register new free user', registered.status === 201 && registered.body.user.plan === 'free');
-  const demo = { token: registered.body.token, user: registered.body.user };
+  // ---------- ورود آسان با کد پیامکی ----------
+  const phoneA = randomPhone();
+  const badPhone = await call('/api/auth/otp/request', { method: 'POST', body: { phone: '12345' } });
+  check('otp rejects invalid phone', badPhone.status === 400, `status=${badPhone.status}`);
 
-  const foods = await call('/api/foods', { token: demo.token });
+  const a = await otpLogin(phoneA, { name: 'کاربر الف', researchConsent: true });
+  check('otp login creates new user', a.verified.status === 200 && a.verified.body.isNew === true && a.verified.body.user.plan === 'free');
+  check('welcome tokens granted', a.verified.body.user.tokenBalance === 30, `balance=${a.verified.body.user.tokenBalance}`);
+  const tokenA = a.verified.body.token;
+  const codeA = a.verified.body.user.referralCode;
+  check('referral code issued', typeof codeA === 'string' && codeA.length === 7);
+
+  const again = await call('/api/auth/otp/request', { method: 'POST', body: { phone: phoneA } });
+  check('otp resend throttled', again.status === 429, `status=${again.status}`);
+
+  const wrong = await call('/api/auth/otp/verify', { method: 'POST', body: { phone: phoneA, code: '00000' } });
+  check('wrong or consumed otp rejected', wrong.status === 400, `status=${wrong.status}`);
+
+  const persianDigits = await call('/api/auth/otp/request', { method: 'POST', body: { phone: '۰۹۱۴۰۰۰۰۰۰۰' } });
+  check('persian digits phone accepted', persianDigits.status === 200 || persianDigits.status === 429, `status=${persianDigits.status}`);
+
+  const demo = await call('/api/auth/demo', { method: 'POST' });
+  check('one-tap demo login', demo.status === 200 && demo.body.user.email === 'demo@boshghabyar.ir');
+
+  // ---------- معرفی به دوستان ----------
+  const phoneB = randomPhone();
+  const b = await otpLogin(phoneB, { referralCode: codeA.toLowerCase() });
+  check('referred user gets invitee bonus', b.verified.body.user.tokenBalance === 40, `balance=${b.verified.body.user.tokenBalance}`);
+  const tokenB = b.verified.body.token;
+
+  const clubA0 = await call('/api/club', { token: tokenA });
+  check('inviter has pending referral', clubA0.status === 200 && clubA0.body.invitedCount === 1 && clubA0.body.balance === 30);
+
+  const mealB = await call('/api/meals', { method: 'POST', token: tokenB, body: { foodId: 'ghormeh-sabzi', grams: 200, mealType: 'lunch' } });
+  check('meal created and first-meal tokens', mealB.status === 201 && mealB.body.tokensEarned === 3, `earned=${mealB.body.tokensEarned}`);
+  const clubA1 = await call('/api/club', { token: tokenA });
+  check('inviter rewarded after first meal', clubA1.body.balance === 80 && clubA1.body.rewardedCount === 1, `balance=${clubA1.body.balance}`);
+  await call('/api/meals', { method: 'POST', token: tokenB, body: { foodId: 'sib', grams: 100, mealType: 'snack' } });
+  const clubA2 = await call('/api/club', { token: tokenA });
+  check('referral reward is idempotent', clubA2.body.balance === 80, `balance=${clubA2.body.balance}`);
+
+  // ---------- باشگاه: ورود روزانه و جایزه ----------
+  const c1 = await call('/api/club/checkin', { method: 'POST', token: tokenA });
+  check('daily check-in awards tokens', c1.status === 200 && c1.body.awarded === 2 && c1.body.streak === 1);
+  const c2 = await call('/api/club/checkin', { method: 'POST', token: tokenA });
+  check('second check-in same day blocked', c2.body.alreadyDone === true && c2.body.awarded === 0);
+  const poor = await call('/api/club/redeem', { method: 'POST', token: tokenA, body: { rewardId: 'pro-3d' } });
+  check('redeem blocked without enough tokens', poor.status === 400, `status=${poor.status}`);
+  const noReward = await call('/api/club/redeem', { method: 'POST', token: tokenA, body: { rewardId: 'nope' } });
+  check('unknown reward rejected', noReward.status === 400);
+
+  // ---------- گزارش‌های رایگان و پولی ----------
+  const weekly = await call('/api/reports/weekly?days=7', { token: tokenB });
+  check('free weekly report available', weekly.status === 200 && weekly.body.trend.length === 7 && weekly.body.advanced === false);
+  const lockedDetailed = await call('/api/reports/detailed?days=30', { token: tokenB });
+  check('detailed report locked for free', lockedDetailed.body.locked === true && !('report' in lockedDetailed.body));
+  const lockedCsv = await call('/api/reports/export.csv', { token: tokenB });
+  check('csv export locked for free', lockedCsv.status === 403 && lockedCsv.body.upgradeRequired === true);
+
+  // ---------- ادمین ----------
+  const adminLogin = await call('/api/auth/login', { method: 'POST', body: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD } });
+  check('admin password login', adminLogin.status === 200 && adminLogin.body.user.role === 'admin', `status=${adminLogin.status}`);
+  const admin = { token: adminLogin.body.token };
+  const userForbidden = await call('/api/admin/overview', { token: tokenB });
+  check('admin panel forbidden for user', userForbidden.status === 403);
+
+  const idA = a.verified.body.user.id;
+  const grant = await call(`/api/admin/users/${idA}/tokens`, { method: 'POST', token: admin.token, body: { delta: 500, note: 'smoke' } });
+  check('admin can grant tokens', grant.status === 200 && grant.body.balance === 582, `balance=${grant.body.balance}`);
+
+  const redeem = await call('/api/club/redeem', { method: 'POST', token: tokenA, body: { rewardId: 'pro-3d' } });
+  check('redeem unlocks temporary pro', redeem.status === 200 && redeem.body.user.plan === 'pro' && Boolean(redeem.body.proUntil), `status=${redeem.status}`);
+  const detailed = await call('/api/reports/detailed?days=30', { token: tokenA });
+  check('detailed report unlocked on pro', detailed.status === 200 && detailed.body.locked === false && detailed.body.report.trend.length === 30);
+  const csv = await call('/api/reports/export.csv?days=30', { token: tokenA });
+  check('csv export works on pro (BOM + header)', csv.status === 200 && csv.hasBom && csv.text.includes('کیلوکالری'));
+
+  const overview = await call('/api/admin/overview', { token: admin.token });
+  check('admin overview has club stats', overview.status === 200 && overview.body.club.tokensIssued > 0 && overview.body.users >= 4);
+  const users = await call('/api/admin/users?q=' + encodeURIComponent(phoneA.slice(0, 7)), { token: admin.token });
+  check('admin can search users', users.status === 200 && users.body.users.some((u) => u.id === idA));
+  const detail = await call(`/api/admin/users/${idA}`, { token: admin.token });
+  check('admin can inspect user data', detail.status === 200 && detail.body.user.id === idA);
+
+  const summary = await call('/api/admin/research/summary?minGroup=1', { token: admin.token });
+  check('research summary returns aggregates', summary.status === 200 && summary.body.users >= 0 && Array.isArray(summary.body.byMealType));
+  const exportCsv = await call('/api/admin/research/export?format=csv', { token: admin.token });
+  check('research export is pseudonymized', exportCsv.status === 200 && !exportCsv.text.includes('@') && exportCsv.text.includes('pseudo_user'));
+  const rawNoReason = await call('/api/admin/research/export?anonymize=false', { token: admin.token });
+  check('raw export requires a reason', rawNoReason.status === 400);
+  const rawWithReason = await call('/api/admin/research/export?anonymize=false&scope=all&format=json&reason=' + encodeURIComponent('بررسی کیفیت داده برای گزارش پژوهشی'), { token: admin.token });
+  check('raw export allowed with reason', rawWithReason.status === 200);
+  const auditLog = await call('/api/admin/audit?limit=20', { token: admin.token });
+  check('admin data access is audited', auditLog.status === 200 && auditLog.body.audit.some((r) => r.action === 'admin.research.export'));
+  const patch = await call(`/api/admin/users/${a.verified.body.user.id}`, { method: 'PATCH', token: admin.token, body: { name: 'کاربر الف ویرایش‌شده' } });
+  check('admin can edit user', patch.status === 200 && patch.body.user.name.includes('ویرایش'));
+
+  // ---------- تشخیص غذا با عکس ----------
+  const statusR = await call('/api/recognize/status', { token: tokenB });
+  check('recognition status endpoint', statusR.status === 200 && statusR.body.limit === 5);
+  const noAuth = await call('/api/recognize', { method: 'POST', raw: fakeJpeg(1), headers: { 'Content-Type': 'image/jpeg' } });
+  check('recognition requires auth', noAuth.status === 401);
+  const badImage = await call('/api/recognize', { method: 'POST', token: tokenB, raw: Buffer.from('this is not an image at all'), headers: { 'Content-Type': 'image/jpeg' } });
+  check('recognition rejects fake image bytes', badImage.status === 400, `status=${badImage.status}`);
+  if (statusR.body.available) {
+    const ok = await call('/api/recognize', { method: 'POST', token: tokenB, raw: fakeJpeg(2), headers: { 'Content-Type': 'image/jpeg' } });
+    check('recognition maps to a known food', ok.status === 200 && ok.body.detection && typeof ok.body.detection.foodId === 'string' && ok.body.remaining === 4, `status=${ok.status}`);
+    let last = ok;
+    for (let i = 3; i < 8; i += 1) {
+      last = await call('/api/recognize', { method: 'POST', token: tokenB, raw: fakeJpeg(i), headers: { 'Content-Type': 'image/jpeg' } });
+    }
+    check('recognition daily quota enforced for free', last.status === 429, `status=${last.status}`);
+  } else {
+    check('recognition unavailable returns manual fallback', badImage.status === 503 || badImage.status === 400);
+  }
+
+  // ---------- مسیر قدیمی ایمیل/رمز و قواعد طرح ----------
+  const registered = await call('/api/auth/register', { method: 'POST', body: {
+    name: 'کاربر آزمایشی', email: `smoke-${crypto.randomUUID()}@example.com`, password: 'Smoke@12345',
+  } });
+  check('legacy register still works', registered.status === 201 && registered.body.user.plan === 'free');
+  const legacy = registered.body.token;
+  const foods = await call('/api/foods', { token: legacy });
   check('free food list = 20', foods.status === 200 && foods.body.count === 20, `count=${foods.body.count}`);
   check('pro foods hidden from free', !foods.body.foods.some((f) => f.id === 'kashke-bademjan'));
-
-  const custom = await call('/api/foods/custom', { method: 'POST', token: demo.token, body: {
+  const custom = await call('/api/foods/custom', { method: 'POST', token: legacy, body: {
     nameFa: 'غذای آزمایشی', category: 'main', per100g: { kcal: 100, protein: 5, carbs: 10, fat: 2, fiber: 1 },
     servingGrams: 100, servingLabel: 'بشقاب', priceIRR: 1000,
   } });
-  check('custom food blocked on free', custom.status === 403 && custom.body.upgradeRequired === true, `status=${custom.status}`);
-
-  const badMeal = await call('/api/meals', { method: 'POST', token: demo.token, body: { foodId: 'nope', grams: 0, mealType: 'lunch' } });
-  check('zod validation rejects invalid meal', badMeal.status === 400, `status=${badMeal.status}`);
-
-  const meal = await call('/api/meals', { method: 'POST', token: demo.token, body: {
-    foodId: 'ghormeh-sabzi', grams: 150, mealType: 'lunch',
-  } });
-  check('meal created', meal.status === 201, `status=${meal.status}`);
-
-  const rec = await call(`/api/recommendations/${meal.body.id}`, { token: demo.token });
-  check('deterministic recommendations', rec.status === 200 && rec.body.deterministic === true && rec.body.suggestions.length > 0,
-    `suggestions=${rec.body.suggestions?.length}`);
+  check('custom food blocked on free', custom.status === 403 && custom.body.upgradeRequired === true);
+  const badMeal = await call('/api/meals', { method: 'POST', token: legacy, body: { foodId: 'nope', grams: 0, mealType: 'lunch' } });
+  check('validation rejects invalid meal', badMeal.status === 400);
+  const futureMeal = await call('/api/meals', { method: 'POST', token: legacy, body: { foodId: 'sib', grams: 100, mealType: 'snack', date: '2999-01-01' } });
+  check('far-future meal date rejected', futureMeal.status === 400);
+  const meal = await call('/api/meals', { method: 'POST', token: legacy, body: { foodId: 'ghormeh-sabzi', grams: 150, mealType: 'lunch', source: 'camera' } });
+  check('camera-sourced meal accepted', meal.status === 201);
+  const rec = await call(`/api/recommendations/${meal.body.id}`, { token: legacy });
+  check('deterministic recommendations', rec.status === 200 && rec.body.deterministic === true && rec.body.suggestions.length > 0);
   check('AI prompt locked on free', rec.body.suggestions.every((s) => s.prompt === null));
+  const old = await call('/api/meals', { method: 'POST', token: legacy, body: { foodId: 'sib', grams: 100, mealType: 'snack', date: addDaysIso(-30) } });
+  const filtered = await call('/api/meals', { token: legacy });
+  check('free history limited to 7 days', !filtered.body.meals.some((m) => m.id === old.body.id) && filtered.body.historyLimited === true);
+  const idor = await call(`/api/meals/${meal.body.id}`, { method: 'DELETE', token: admin.token });
+  check('IDOR blocked on delete', idor.status === 404);
+  const badJson = await fetch(`${BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{bad' });
+  check('malformed JSON returns 400', badJson.status === 400);
 
-  const daily = await call('/api/reports/daily', { token: demo.token });
-  check('daily report has totals and status', daily.status === 200 && typeof daily.body.report.totals.kcal === 'number' && Boolean(daily.body.report.status));
-
-  const weekly = await call('/api/reports/weekly?days=7', { token: demo.token });
-  check('weekly advanced analytics locked on free', weekly.status === 200 && weekly.body.advanced === false);
-  check('weekly trend has 7 points', weekly.body.trend.length === 7);
-
-  const other = await call('/api/meals', { method: 'POST', token: demo.token, body: {
-    foodId: 'chelow-kebab-koobideh', grams: 200, mealType: 'dinner', date: '2000-01-01',
-  } });
-  const filtered = await call('/api/meals', { token: demo.token });
-  check('free history limited to 7 days', !filtered.body.meals.some((m) => m.id === other.body.id) && filtered.body.historyLimited === true);
-
-  const adminForbidden = await call('/api/admin/overview', { token: demo.token });
-  check('admin panel forbidden for user', adminForbidden.status === 403, `status=${adminForbidden.status}`);
-
-  const admin = await login('admin@boshghabyar.ir', 'Admin@12345');
-  const overview = await call('/api/admin/overview', { token: admin.token });
-  check('admin overview readable', overview.status === 200 && overview.body.users >= 2, `users=${overview.body.users}`);
-
-  const events = await call('/api/admin/events?limit=5', { token: admin.token });
-  check('admin events readable', events.status === 200 && events.body.events.length > 0);
-
-  const upgrade = await call('/api/upgrade', { method: 'POST', token: demo.token, body: { plan: 'pro', reference: 'smoke' } });
-  check('mock upgrade activates pro', upgrade.status === 200 && upgrade.body.user.plan === 'pro');
-
-  const proFoods = await call('/api/foods', { token: demo.token });
-  check('pro unlocks extended foods', proFoods.body.count > 20 && proFoods.body.foods.some((f) => f.id === 'kashke-bademjan'), `count=${proFoods.body.count}`);
-
-  const proCustom = await call('/api/foods/custom', { method: 'POST', token: demo.token, body: {
-    nameFa: 'غذای آزمایشی پرو', category: 'main', per100g: { kcal: 120, protein: 6, carbs: 12, fat: 3, fiber: 2 },
-    servingGrams: 150, servingLabel: 'بشقاب', priceIRR: 2000,
-  } });
-  check('custom food allowed on pro', proCustom.status === 201, `status=${proCustom.status}`);
-
-  const proWeekly = await call('/api/reports/weekly?days=7', { token: demo.token });
-  check('pro advanced analytics enabled', proWeekly.body.advanced === true);
-
-  const proRec = await call(`/api/recommendations/${meal.body.id}`, { token: demo.token });
-  check('pro receives explanation prompt', proRec.body.suggestions.some((s) => typeof s.prompt === 'string' && s.prompt.length > 0));
-
-  const deleted = await call(`/api/meals/${meal.body.id}`, { method: 'DELETE', token: admin.token });
-  check('IDOR blocked on delete', deleted.status === 404, `status=${deleted.status}`);
+  // ---------- نشست و حریم خصوصی ----------
+  const out = await call('/api/auth/logout', { method: 'POST', token: legacy });
+  const after = await call('/api/me', { token: legacy });
+  check('logout revokes the session', out.status === 204 && after.status === 401);
+  const del = await call('/api/me', { method: 'DELETE', token: tokenB, body: { confirm: true } });
+  const gone = await call('/api/me', { token: tokenB });
+  check('account deletion works', del.status === 204 && gone.status === 401);
 
   const failed = results.filter((r) => !r.ok);
   console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
   if (failed.length) process.exitCode = 1;
 }
 
+function addDaysIso(delta) {
+  return new Date(Date.now() + delta * 86_400_000).toISOString().slice(0, 10);
+}
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+

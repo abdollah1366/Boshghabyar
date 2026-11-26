@@ -1,33 +1,49 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import type { ReactNode } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { Shell } from './components/Shell';
+import { PageSkeleton } from './components/ui';
 import { useAuth } from './context/AuthContext';
-import { Admin } from './pages/Admin';
+import { Club } from './pages/Club';
 import { Dashboard } from './pages/Dashboard';
 import { Landing } from './pages/Landing';
 import { LogMeal } from './pages/LogMeal';
 import { Login } from './pages/Login';
 import { Profile } from './pages/Profile';
-import { Reports } from './pages/Reports';
 import { Suggestions } from './pages/Suggestions';
 
+const Reports = lazy(() => import('./pages/Reports'));
+const Admin = lazy(() => import('./pages/Admin'));
+
 function Protected({ children, adminOnly = false }: { children: ReactNode; adminOnly?: boolean }) {
-  const { user, ready } = useAuth();
-  if (!ready) return <div className="main"><p className="muted">در حال بارگذاری…</p></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  const { user, ready, expired } = useAuth();
+  const location = useLocation();
+  if (!ready) {
+    return (
+      <div className="page" role="status" aria-label="در حال بارگذاری">
+        <PageSkeleton />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname, expired }} />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />;
-  return <Shell>{children}</Shell>;
+  return (
+    <Shell>
+      <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+    </Shell>
+  );
 }
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
 
   return (
     <Routes>
-      <Route path="/" element={user ? <Protected><Dashboard /></Protected> : <Landing />} />
+      <Route path="/" element={ready && !user ? <Landing /> : <Protected><Dashboard /></Protected>} />
       <Route path="/login" element={<Login />} />
       <Route path="/log" element={<Protected><LogMeal /></Protected>} />
+      <Route path="/club" element={<Protected><Club /></Protected>} />
       <Route path="/suggestions" element={<Protected><Suggestions /></Protected>} />
       <Route path="/reports" element={<Protected><Reports /></Protected>} />
       <Route path="/profile" element={<Protected><Profile /></Protected>} />

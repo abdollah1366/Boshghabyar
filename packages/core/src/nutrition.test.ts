@@ -30,7 +30,7 @@ test('محاسبه ارزش غذایی بر اساس وزن، خطی و گردش
   assert.deepEqual(entryNutrition(entry('chelow-kebab-koobideh', 250)), macros);
 });
 
-test('خلاصه روزانه کالری، هزینه و وضعیت را درست محاسبه میکند', () => {
+test('خلاصه روزانه کالری، هزینه و وضعیت را درست محاسبه می‌کند', () => {
   const entries = [entry('chelow-kebab-koobideh', 200), entry('sib', 150)];
   const summary = summarizeDay(entries, DEFAULT_GOAL, '2026-11-25');
   assert.equal(summary.entryCount, 2);
@@ -39,7 +39,7 @@ test('خلاصه روزانه کالری، هزینه و وضعیت را درس�
   assert.equal(summary.status, 'below');
 });
 
-test('پیشنهاد جایگزین برای هدف بودجه، غذای ارزانتر و معتبر برمیگرداند', () => {
+test('پیشنهاد جایگزین برای هدف بودجه، غذای ارزان‌تر و معتبر برمیگرداند', () => {
   const suggestions = suggestAlternatives({
     entry: entry('chelow-kebab-koobideh', 250),
     goal: { ...DEFAULT_GOAL, goalType: 'budget', dailyBudgetIRR: 200000 },
@@ -51,7 +51,7 @@ test('پیشنهاد جایگزین برای هدف بودجه، غذای ارز
   assert.ok(suggestions.every((s) => FOODS_BY_ID[s.toFoodId]?.free === true));
 });
 
-test('نسخه رایگان نباید غذاهای حرفهای را پیشنهاد دهد و نسخه حرفهای میدهد', () => {
+test('نسخه رایگان نباید غذاهای حرفه‌ای را پیشنهاد دهد و نسخه حرفه‌ای می‌دهد', () => {
   const params = {
     entry: entry('chelow-kebab-koobideh', 250),
     goal: DEFAULT_GOAL,
@@ -63,14 +63,14 @@ test('نسخه رایگان نباید غذاهای حرفهای را پیشنه
   assert.ok(proIds.length >= freeIds.length);
 });
 
-test('روند هفت روزه روزهای بدون وعده را هم شامل میشود', () => {
+test('روند هفت روزه روزهای بدون وعده را هم شامل می‌شود', () => {
   const trend = buildTrend([entry('sib', 150, '2026-11-25')], '2026-11-19', 7);
   assert.equal(trend.length, 7);
   assert.equal(trend.at(-1)?.kcal, 78);
   assert.equal(trend[0]?.entryCount, 0);
 });
 
-test('دسترسیهای نسخه و محدودیت تاریخچه', () => {
+test('دسترسی‌های نسخه و محدودیت تاریخچه', () => {
   assert.equal(hasFeature('free', 'advancedAnalytics'), false);
   assert.equal(hasFeature('pro', 'advancedAnalytics'), true);
   assert.equal(historyCutoffDate('pro'), null);

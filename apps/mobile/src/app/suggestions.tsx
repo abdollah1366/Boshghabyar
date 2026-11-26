@@ -36,11 +36,11 @@ export default function SuggestionsScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>پیشنهادها</Text>
-      <Text style={styles.subtitle}>برای هر وعده ثبتشده، جایگزین متعادل و اقتصادی ببینید.</Text>
+      <Text style={styles.subtitle}>برای هر وعده ثبت‌شده، جایگزین متعادل و اقتصادی ببینید.</Text>
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Card>
-        <SectionTitle>وعدههای ثبتشده</SectionTitle>
+        <SectionTitle>وعده‌های ثبت‌شده</SectionTitle>
         {data?.meals.length === 0 && <Text style={styles.subtitle}>ابتدا یک وعده ثبت کنید.</Text>}
         {data?.meals.map((meal) => (
           <Pressable key={meal.id} onPress={() => load(meal.id)} style={styles.row}>
@@ -60,7 +60,7 @@ export default function SuggestionsScreen() {
               <Text style={styles.subtitle}>{s.reasonFa}</Text>
             </View>
           ))}
-          <Text style={styles.footnote}>اعداد توسط موتور محاسبه بشقاب‌یار بهدست آمدهاند.</Text>
+          <Text style={styles.footnote}>اعداد توسط موتور محاسبه بشقاب‌یار به‌دست آمدهاند.</Text>
         </Card>
       )}
       {selected && !suggestions && <Text style={styles.subtitle}>در حال محاسبه…</Text>}

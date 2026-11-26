@@ -220,14 +220,14 @@ function signed(value: number, unit: string): string {
 export function reasonFor(kind: SuggestionKind, delta: Suggestion['delta']): string {
   switch (kind) {
     case 'cheaper':
-      return `هزینه وعده ${signed(delta.priceIRR, ' تومان')} میشود؛ کالری ${signed(delta.kcal, ' کیلوکالوری')} تغییر میکند.`;
+      return `هزینه وعده ${signed(delta.priceIRR, ' تومان')} می‌شود؛ کالری ${signed(delta.kcal, ' کیلوکالوری')} تغییر می‌کند.`;
     case 'lower-calorie':
-      return `کالری وعده ${signed(delta.kcal, ' کیلوکالوری')} میشود و هزینه ${signed(delta.priceIRR, ' تومان')} تغییر میکند.`;
+      return `کالری وعده ${signed(delta.kcal, ' کیلوکالوری')} می‌شود و هزینه ${signed(delta.priceIRR, ' تومان')} تغییر می‌کند.`;
     case 'higher-protein':
-      return `پروتئین وعده ${signed(delta.protein, ' گرم')} میشود؛ کالری ${signed(delta.kcal, ' کیلوکالوری')} تغییر میکند.`;
+      return `پروتئین وعده ${signed(delta.protein, ' گرم')} می‌شود؛ کالری ${signed(delta.kcal, ' کیلوکالوری')} تغییر می‌کند.`;
     case 'balanced':
     default:
-      return `کالری ${signed(delta.kcal, '')}، فیبر ${signed(delta.fiber, ' گرم')} و هزینه ${signed(delta.priceIRR, ' تومان')} تغییر میکند.`;
+      return `کالری ${signed(delta.kcal, '')}، فیبر ${signed(delta.fiber, ' گرم')} و هزینه ${signed(delta.priceIRR, ' تومان')} تغییر می‌کند.`;
   }
 }
 
@@ -237,7 +237,7 @@ export function reasonFor(kind: SuggestionKind, delta: Suggestion['delta']): str
  */
 export function buildExplanationPrompt(suggestion: Suggestion, from: Food, to: Food): string {
   return [
-    'شما یک توضیح کوتاه و دوستانه به فارسی برای پیشنهاد جایگزینی غذا مینویسید.',
+    'شما یک توضیح کوتاه و دوستانه به فارسی برای پیشنهاد جایگزینی غذا می‌نویسید.',
     'اعداد زیر از موتور محاسبه بشقاب‌یار آمدهاند و نباید بازمحاسبه یا تغییر شوند:',
     `از: ${from.nameFa} به: ${to.nameFa}`,
     `تغییر کالری: ${suggestion.delta.kcal}، پروتئین: ${suggestion.delta.protein} گرم، فیبر: ${suggestion.delta.fiber} گرم، هزینه: ${suggestion.delta.priceIRR} تومان`,

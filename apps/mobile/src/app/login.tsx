@@ -47,18 +47,18 @@ export default function LoginScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.badge}><Text style={styles.badgeText}>بشقاب‌یار</Text></View>
-      <Text style={styles.title}>همراه هوشمند وعدههای ایرانی</Text>
-      <Text style={styles.subtitle}>وعده را ثبت کنید، کالری و هزینه آن را ببینید و جایگزین متعادلتر بیابید.</Text>
+      <Text style={styles.title}>همراه هوشمند وعده‌های ایرانی</Text>
+      <Text style={styles.subtitle}>وعده را ثبت کنید، کالری و هزینه آن را ببینید و جایگزین متعادل‌تر بیابید.</Text>
 
       <Card>
-        <Text style={styles.formTitle}>{mode === 'login' ? 'ورود به حساب' : 'ثبتنام'}</Text>
+        <Text style={styles.formTitle}>{mode === 'login' ? 'ورود به حساب' : 'ثبت‌نام'}</Text>
         {mode === 'register' && <Field label="نام" value={name} onChange={setName} placeholder="نام شما" />}
         <Field label="ایمیل" value={email} onChange={setEmail} placeholder="you@example.com" keyboardType="email-address" />
         <Field label="رمز عبور" value={password} onChange={setPassword} placeholder="حداقل ۸ کاراکتر" secure />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button title={mode === 'login' ? 'ورود' : 'ساخت حساب'} onPress={submit} disabled={busy} loading={busy} />
         <Button
-          title={mode === 'login' ? 'حساب ندارید؟ ثبتنام' : 'حساب دارید؟ ورود'}
+          title={mode === 'login' ? 'حساب ندارید؟ ثبت‌نام' : 'حساب دارید؟ ورود'}
           onPress={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
           variant="secondary"
         />

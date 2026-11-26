@@ -31,7 +31,7 @@ export interface Food {
   /** ارزش غذایی به ازای ۱۰۰ گرم */
   per100g: Macros;
   serving: Serving;
-  /** تخمین هزینه هر سهم به تومان (قابل بهروزرسانی توسط ادمین) */
+  /** تخمین هزینه هر سهم به تومان (قابل به‌روزرسانی توسط ادمین) */
   estimatedPriceIRR: number;
   tags: string[];
   /** غذاهای پایه در نسخه رایگان و بقیه در نسخه Pro */
@@ -77,7 +77,7 @@ export interface Suggestion {
   toFoodId: string;
   titleFa: string;
   reasonFa: string;
-  /** تغییرات به ازای همان وزن ثبتشده */
+  /** تغییرات به ازای همان وزن ثبت‌شده */
   delta: Macros & { priceIRR: number };
   score: number;
 }

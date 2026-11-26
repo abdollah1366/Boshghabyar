@@ -13,7 +13,7 @@ const MEAL_TYPES: Array<{ value: MealType; label: string }> = [
   { value: 'breakfast', label: 'صبحانه' },
   { value: 'lunch', label: 'ناهار' },
   { value: 'dinner', label: 'شام' },
-  { value: 'snack', label: 'میانوعده' },
+  { value: 'snack', label: 'میان‌وعده' },
 ];
 
 export default function LogMealScreen() {

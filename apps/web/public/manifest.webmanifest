@@ -1,0 +1,14 @@
+{
+  "name": "بشقاب‌یار",
+  "short_name": "بشقاب‌یار",
+  "description": "ثبت وعده با عکس، گزارش تغذیه و باشگاه مشتریان برای غذاهای ایرانی",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3F7F8",
+  "theme_color": "#0E7490",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

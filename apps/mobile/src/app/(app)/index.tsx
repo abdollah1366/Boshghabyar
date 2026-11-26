@@ -11,7 +11,7 @@ import { colors, font, space } from '@/theme';
 interface DailyResponse { report: DaySummary; meals: MealEntry[] }
 interface MealsResponse { meals: MealEntry[]; foods: Food[] }
 
-const MEAL_LABELS: Record<string, string> = { breakfast: 'صبحانه', lunch: 'ناهار', dinner: 'شام', snack: 'میانوعده' };
+const MEAL_LABELS: Record<string, string> = { breakfast: 'صبحانه', lunch: 'ناهار', dinner: 'شام', snack: 'میان‌وعده' };
 
 export default function HomeScreen() {
   const { user, signOut } = useSession();
@@ -38,7 +38,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.hello}>سلام {user?.name}</Text>
-          <Text style={styles.subtitle}>خلاصه وعدههای امروز</Text>
+          <Text style={styles.subtitle}>خلاصه وعده‌های امروز</Text>
         </View>
         <Button title="خروج" variant="secondary" onPress={signOut} />
       </View>
@@ -54,7 +54,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.metrics}>
             <Metric label="هزینه" value={`${Math.round(report.ratio.budget * report.goal.dailyBudgetIRR).toLocaleString('fa-IR')}`} hint="تومان" />
-            <Metric label="وعدهها" value={report.entryCount.toString()} hint="امروز" />
+            <Metric label="وعده‌ها" value={report.entryCount.toString()} hint="امروز" />
           </View>
 
           <Card>
@@ -70,8 +70,8 @@ export default function HomeScreen() {
           <Button title="مشاهده پیشنهادها" variant="secondary" onPress={() => router.push('/suggestions')} />
 
           <Card>
-            <SectionTitle>وعدههای اخیر</SectionTitle>
-            {daily?.meals.length === 0 && <Text style={styles.subtitle}>هنوز وعدهای ثبت نشده است.</Text>}
+            <SectionTitle>وعده‌های اخیر</SectionTitle>
+            {daily?.meals.length === 0 && <Text style={styles.subtitle}>هنوز وعده‌ای ثبت نشده است.</Text>}
             {daily?.meals.slice(0, 5).map((meal) => (
               <View style={styles.mealRow} key={meal.id}>
                 <Text style={styles.mealName}>{nameOf(meal.foodId)}</Text>

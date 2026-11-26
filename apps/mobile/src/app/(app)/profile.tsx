@@ -10,7 +10,7 @@ const GOAL_TYPES: Array<{ value: GoalType; label: string }> = [
   { value: 'balance', label: 'تعادل' },
   { value: 'weight-loss', label: 'کاهش وزن' },
   { value: 'muscle-gain', label: 'افزایش عضله' },
-  { value: 'budget', label: 'صرفهجویی' },
+  { value: 'budget', label: 'صرفه‌جویی' },
 ];
 
 export default function ProfileScreen() {
@@ -38,7 +38,7 @@ export default function ProfileScreen() {
     setBusy(true);
     try {
       await upgrade();
-      setMessage('نسخه حرفهای فعال شد (پرداخت آزمایشی).');
+      setMessage('نسخه حرفه‌ای فعال شد (پرداخت آزمایشی).');
     } catch {
       setMessage('خطا در ارتقا');
     } finally {
@@ -50,11 +50,11 @@ export default function ProfileScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>نمایه و اهداف</Text>
       <Text style={styles.subtitle}>{user.name} · {user.email}</Text>
-      <View style={styles.planBadge}><Text style={styles.planText}>{user.plan === 'pro' ? 'نسخه حرفهای' : 'نسخه رایگان'}</Text></View>
+      <View style={styles.planBadge}><Text style={styles.planText}>{user.plan === 'pro' ? 'نسخه حرفه‌ای' : 'نسخه رایگان'}</Text></View>
       {message && <Text style={styles.message}>{message}</Text>}
 
       <Card>
-        <SectionTitle>اهداف تغذیهای</SectionTitle>
+        <SectionTitle>اهداف تغذیه‌ای</SectionTitle>
         <Text style={styles.fieldLabel}>هدف</Text>
         <View style={styles.types}>
           {GOAL_TYPES.map((type) => (
@@ -82,7 +82,7 @@ export default function ProfileScreen() {
       <Card>
         <SectionTitle>اشتراک</SectionTitle>
         <Text style={styles.subtitle}>نسخه رایگان شامل ۲۰ غذای ایرانی، ۷ روز تاریخچه و گزارش پایه است.</Text>
-        {user.plan !== 'pro' && <Button title="ارتقا به حرفهای" variant="accent" onPress={doUpgrade} disabled={busy} />}
+        {user.plan !== 'pro' && <Button title="ارتقا به حرفه‌ای" variant="accent" onPress={doUpgrade} disabled={busy} />}
       </Card>
 
       <Button title="خروج از حساب" variant="secondary" onPress={signOut} />

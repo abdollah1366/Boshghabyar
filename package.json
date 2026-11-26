@@ -12,14 +12,17 @@
     "core:test": "npm run test -w @boshghabyar/core",
     "api:dev": "npm run dev -w @boshghabyar/api",
     "api:build": "npm run build -w @boshghabyar/api",
-    "smoke": "node scripts/smoke.mjs",
+    "smoke": "node scripts/run-smoke.mjs",
     "web:dev": "npm run dev -w @boshghabyar/web",
     "web:build": "npm run build -w @boshghabyar/web",
     "mobile:start": "npm run start -w @boshghabyar/mobile",
     "mobile:typecheck": "npm run typecheck -w @boshghabyar/mobile",
     "typecheck": "npm run typecheck -w @boshghabyar/core && npm run typecheck -w @boshghabyar/api && npm run typecheck -w @boshghabyar/web && npm run typecheck -w @boshghabyar/mobile",
     "build": "npm run core:build && npm run api:build && npm run web:build",
-    "test": "npm run core:build && npm run core:test"
+    "test": "npm run core:build && npm run core:test && npm run test -w @boshghabyar/api",
+    "smoke:live": "node scripts/smoke.mjs",
+    "text:check": "node scripts/fix-zwnj.mjs --check packages apps/api apps/web/src apps/android/app/src apps/mobile/src docs README.md scripts",
+    "text:fix": "node scripts/fix-zwnj.mjs --write packages apps/api apps/web/src apps/android/app/src apps/mobile/src docs README.md scripts"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
