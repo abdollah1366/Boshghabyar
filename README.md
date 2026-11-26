@@ -11,7 +11,7 @@
 - **پیشنهاد هوشمند** بر اساس هدف تغذیهای و بودجهٔ باقیمانده — قواعد کاملاً تعیینپذیر (deterministic) و قابل توضیح.
 - **دو طرح آزاد و حرفهای**: طرح آزاد شامل ۲۰ غذای رایج، ۷ روز تاریخچه و گزارش سادۀ هفتگی است؛ طرح حرفهای تمام غذاها، غذای سفارشی، تاریخچۀ نامحدود، تحلیل پیشرفته و متن توضیحی AI را فعال میکند. **تمام محدودیتها در سرور اعمال میشوند.**
 - **پنل ادمین** برای مشاهدهٔ تعداد کاربران، وعدهها و رویدادها.
-- **RTL کامل**: اعداد فارسی (`fa-IR`)، فونت Vazirmatn بهصورت self-hosted، راستچین اجباری در اندروید (SDK 58) و آیکونهای جهتدار آینهای.
+- **RTL کامل**: اعداد فارسی (`fa-IR`)، فونت Vazirmatn بهصورت self-hosted، راستچین اجباری در مشتری بومی اندروید و آیکونهای جهتدار آینهای.
 
 > **اعداد تغذیهای و قیمتها تخمیناند.** محاسبات توسط کد انجام میشوند و هیچ مدل زبانی عددی تولید نمیکند؛ AI در صورت اتصال تنها متن توضیحی تولید میکند.
 
@@ -22,8 +22,9 @@
 | `packages/core` | منطق خالص و تعیینپذیر: جدول غذاها، محاسبات تغذیهای، قواعد پیشنهاد، محدودیت طرح + تست واحد |
 | `apps/api` | Express + TypeScript + `node:sqlite` + JWT + zod؛ تمام endpointها و گیتینگ سمت سرور |
 | `apps/web` | وباپ React + Vite، راستچین و واکنشگرا |
-| `apps/mobile` | اپ اندروید Expo Router / React Native (SDK 58) |
-| `docs` | نیازسنجی، سیستم طراحی، وایرفریمها، معماری و سه سند ارزیابی |
+| `apps/android` | **مشتری اصلی اندروید: Kotlin بومی + Jetpack Compose** (بدون React Native / Metro) |
+| `apps/mobile` | پیادهسازی قدیمی Expo Router / React Native (SDK 58) — صرفاً برای مرجع نگه داشته شده |
+| `docs` | نیازسنجی، سیستم طراحی، وایرفریمها، معماری، ارزیابیها و سند پورت بومی |
 | `scripts/smoke.mjs` | تست دود ۲۲ مرحلهای API |
 
 ## شروع سریع
@@ -57,7 +58,25 @@ npm run smoke       # 22/22 بررسی API (SERVER باید در حال اجرا
 
 نتایج اجرای نهایی (۱۴۰۵/۰۹/۰۴ — ۲۵ نوامبر ۲۰۲۶): typecheck ✅، ۷/۷ تست ✅، build ✅ (gzip وب ۹۵.۲KB)، smoke ۲۲/۲۲ ✅، `expo-doctor` ۲۰/۲۰ ✅، `npm audit` صفر critical/high ✅.
 
-## ساخت APK با Android Studio
+## ساخت APK بومی اندروید (Kotlin + Compose) — توصیهشده
+
+ماژول `apps/android` جایگزین کامل نسخهٔ React Native است: تمام صفحهها، ناوبری، ذخیرهٔ امن JWT و RTL به Kotlin/Compose نوشته شدهاند و هیچ باندلر JS/Metroای لازم ندارد. جزئیات در [`docs/11-native-kotlin.md`](docs/11-native-kotlin.md).
+
+```powershell
+cd apps/android
+$env:ANDROID_HOME="$env:LOCALAPPDATA\Android\Sdk"
+$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
+
+.\gradlew.bat :app:assembleDebug --console=plain
+.\gradlew.bat :app:assembleRelease -PapiBaseUrl=http://82.115.17.7:3001 --console=plain
+```
+
+- خروجی release: `apps/android/app/build/outputs/apk/release/app-release.apk` — self-contained و مناسب گوشی فیزیکی/VPS.
+- آدرس API پیشفرض `http://82.115.17.7:3001` است و با `-PapiBaseUrl` قابل تغییر است. چون API فعلی HTTP است، `usesCleartextTraffic=true` تنظیم شده است.
+- release با **debug keystore** امضا میشود (پایلوت)؛ `applicationId` برابر `ir.boshghabyar.app` است، پس قبل از نصب، نسخهٔ قدیمی RN را از گوشی پاک کنید.
+- Gradle wrapper 9.4.1 + AGP 9.2.1 + Kotlin 2.2.10 + Compose BOM 2026.11.01؛ JVM target 17.
+
+## ساخت APK قدیمی Expo / React Native (فقط مرجع)
 
 پوشهٔ `android/` به‌صورت خودکار از روی `app.json` ساخته می‌شود (Continuous Native Generation) و در gitignore است؛ آن را دستی ویرایش نکنید.
 
@@ -123,7 +142,8 @@ $env:EXPO_PUBLIC_API_URL='http://<VPS-IP>:3001'
 
 ## محدودیتهای صریح
 
-- APK دیباگ x86_64 (۷۳.۶MB) و APK release امضاشده arm64-v8a (۳۱.۱MB) ساخته شدند. اجرای release روی گوشی فیزیکی توسط کاربر در حال تأیید است؛ نسخهٔ release با debug keystore امضا شده و هنوز برای فروشگاه مناسب نیست.
+- مشتری بومی `apps/android` (Kotlin/Compose) مسیر اصلی است؛ نسخهٔ Expo/RN تنها برای مرجع نگه داشته شده و APK release آن (arm64-v8a، ۳۱.۱MB) روی گوشی فیزیکی تأیید نشده است.
+- نسخهٔ release بومی با debug keystore امضا میشود و هنوز برای انتشار در فروشگاه مناسب نیست.
 - هیچ کاربر آزمایشی، فروش واقعی، درگاه پرداخت یا سرویس AI متصل وجود ندارد؛ بنابراین شاخصهای SUS و نرخ موفقیت اندازهگیری نشدهاند.
 - `/api/upgrade` تنها شبیهسازی است و `plan_limit_hit` و چرخش نشانه در backlogاند.
 - ESLint تنظیم نشده؛ `typecheck` بهعنوان جایگزین موقت استفاده میشود.
