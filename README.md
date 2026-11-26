@@ -140,6 +140,7 @@ $env:EXPO_PUBLIC_API_URL='http://<VPS-IP>:3001'
 - [`docs/08-security-evaluation.md`](docs/08-security-evaluation.md) — ارزیابی امنیتی و نتایج اسکن
 - [`docs/09-cognitive-evaluation.md`](docs/09-cognitive-evaluation.md) — ارزیابی شناختی و دسترسپذیری
 - [`docs/12-project-overview.md`](docs/12-project-overview.md) — نمای کلی جامع پروژه (معماری، API، کلاینت‌ها، امنیت، تست)
+- [`docs/13-improvement-backlog.md`](docs/13-improvement-backlog.md) — Backlog بهبودها (تشخیص غذا با دوربین، HTTPS، پرداخت، اعلان، آفلاین، …)
 
 ## محدودیتهای صریح
 
