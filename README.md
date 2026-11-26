@@ -88,6 +88,28 @@ npm run mobile:start   # Metro (باندلر JS)
 - قطع‌شدن ناگهانی `Kotlin daemon`: کمبود رم است. در `apps/mobile/android/gradle.properties` مقادیر `org.gradle.parallel=false`، `org.gradle.workers.max=2` و `kotlin.daemon.jvmargs=-Xmx1024m` را تنظیم کنید و هنگام بیلد سنگین، برنامه‌های پرمصرف را ببندید.
 - خروجی `app-debug.apk` پیش‌فرض برای شبیه‌ساز `x86_64` است. برای گوشی واقعی از `-PreactNativeArchitectures=arm64-v8a` استفاده کنید.
 
+### اجرا روی گوشی فیزیکی (وقتی سرور/VPS است)
+
+APK دیباگ **به Metro نیاز دارد** و روی گوشی فیزیکی پیغام `Unable to load script` میدهد مگر اینکه گوشی از طریق USB و با `adb reverse tcp:8081 tcp:8081` به کامپیوتر وصل باشد. روی VPS چنین ارتباطی وجود ندارد؛ از **APK release** استفاده کن:
+
+```powershell
+# 1) API را production روی IP عمومی VPS اجرا کن
+# apps/api/.env : NODE_ENV=production , JWT_SECRET=<راندوم> , CORS_ORIGIN=http://<VPS-IP>:3001
+npm run api:dev
+
+# 2) پورت 3001 را هم در Windows Firewall و هم در Security Group ارائهٔ VPS باز کن
+
+# 3) APK release شامل باندل JS (بدون نیاز به Metro) بساز
+$env:EXPO_PUBLIC_API_URL='http://<VPS-IP>:3001'
+.\gradlew.bat :app:assembleRelease -PreactNativeArchitectures=arm64-v8a --console=plain
+```
+
+خروجی: `apps/mobile/android/app/build/outputs/apk/release/app-release.apk`.
+
+- چون API از طریق HTTP است، `android.usesCleartextTraffic: true` در `app.json` تنظیم شده است. برای محیط واقعی از HTTPS/دامنه استفاده کن.
+- APK release فعلی با **debug keystore** امضا میشود؛ برای انتشار در فروشگاه باید keystore اختصاصی ساخته شود.
+- IP عمومی را در `EXPO_PUBLIC_API_URL` قرار بده، نه `10.0.2.2` (مخصوص شبیهساز) و نه `localhost` (مخصوص همان دستگاه).
+
 ## مستندات
 
 - [`docs/00-roadmap.md`](docs/00-roadmap.md) — نقشۀ مراحل P0–P7
@@ -101,7 +123,7 @@ npm run mobile:start   # Metro (باندلر JS)
 
 ## محدودیتهای صریح
 
-- یک APK دیباگ برای معماری `x86_64` با موفقیت ساخته شد (۷۳.۶MB)؛ اجرای آن روی شبیه‌ساز/گوشی و ساخت نسخهٔ release امضاشده هنوز انجام نشده است.
+- APK دیباگ x86_64 (۷۳.۶MB) و APK release امضاشده arm64-v8a (۳۱.۱MB) ساخته شدند. اجرای release روی گوشی فیزیکی توسط کاربر در حال تأیید است؛ نسخهٔ release با debug keystore امضا شده و هنوز برای فروشگاه مناسب نیست.
 - هیچ کاربر آزمایشی، فروش واقعی، درگاه پرداخت یا سرویس AI متصل وجود ندارد؛ بنابراین شاخصهای SUS و نرخ موفقیت اندازهگیری نشدهاند.
 - `/api/upgrade` تنها شبیهسازی است و `plan_limit_hit` و چرخش نشانه در backlogاند.
 - ESLint تنظیم نشده؛ `typecheck` بهعنوان جایگزین موقت استفاده میشود.
