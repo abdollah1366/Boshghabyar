@@ -5,6 +5,8 @@ import { LEVELS, REWARDS, TOKEN_RULES, isValidReferralCode, levelFor, nextStreak
 import { maskPhone, normalizeIranPhone, toLatinDigits } from './phone.js';
 import { effectivePlan, hasFeature } from './plan.js';
 import { buildBasicReport, buildDetailedReport } from './reports.js';
+import { RECIPES, buildMealPlan } from './mealplan.js';
+import { recipesFor } from './recipes.js';
 import { DEFAULT_GOAL } from './types.js';
 import type { MealEntry } from './types.js';
 
@@ -106,4 +108,20 @@ test('گزارش تکمیلی برای بازهٔ خالی خطا نمی‌ده�
   assert.equal(report.score, 0);
   assert.equal(report.bestDay, null);
   assert.equal(report.insights.length, 1);
+});
+
+test('دستور پخت برای هر وعده وجود دارد و برنامهٔ غذایی تعیین‌پذیر است', () => {
+  assert.ok(RECIPES.length >= 8);
+  for (const type of ['breakfast', 'lunch', 'dinner', 'snack'] as const) {
+    assert.ok(recipesFor(type).length >= 1, `need recipes for ${type}`);
+  }
+  const a = buildMealPlan(7, DEFAULT_GOAL);
+  const b = buildMealPlan(7, DEFAULT_GOAL);
+  assert.deepEqual(a, b);
+  assert.equal(a.days.length, 7);
+  assert.equal(a.days[0]!.meals.length, 4);
+  assert.ok(a.days[0]!.totalKcal > 0);
+  assert.ok(a.days[0]!.totalPriceIRR > 0);
+  assert.equal(new Set(a.days.map((d) => d.weekdayFa)).size, 7);
+  assert.ok(RECIPES.every((r) => r.steps.length >= 1 && r.ingredients.length >= 1));
 });

@@ -48,6 +48,8 @@ export function customFoodsOf(userId: string): Food[] {
     serving_grams: number;
     serving_label: string;
     price_irr: number;
+    barcode: string | null;
+    shared: number;
   }>;
   return rows.map((row) => ({
     id: row.id,
@@ -61,8 +63,39 @@ export function customFoodsOf(userId: string): Food[] {
   }));
 }
 
+/** غذاهای ثبت‌شده توسط کاربران (جمع‌سپاری) که برای همه در دسترس است */
+export function sharedFoods(): Food[] {
+  const rows = db
+    .prepare('SELECT * FROM custom_foods WHERE shared = 1 ORDER BY created_at DESC LIMIT 500')
+    .all() as unknown as Array<{
+    id: string;
+    name_fa: string;
+    category: Food['category'];
+    per100g: string;
+    serving_grams: number;
+    serving_label: string;
+    price_irr: number;
+    barcode: string | null;
+    shared: number;
+  }>;
+  return rows.map((row) => ({
+    id: row.id,
+    nameFa: row.name_fa,
+    category: row.category,
+    per100g: JSON.parse(row.per100g) as Food['per100g'],
+    serving: { grams: row.serving_grams, labelFa: row.serving_label },
+    estimatedPriceIRR: row.price_irr,
+    tags: ['کاربری'],
+    free: true,
+  }));
+}
+
 export function foodsFor(user: UserRow): Food[] {
-  return hasFeature(planOf(user), 'extendedFoods') ? [...FOODS, ...customFoodsOf(user.id)] : FOODS.filter((f) => f.free);
+  const own = customFoodsOf(user.id);
+  const shared = sharedFoods().filter((f) => !own.some((o) => o.id === f.id));
+  return hasFeature(planOf(user), 'extendedFoods')
+    ? [...FOODS, ...own, ...shared]
+    : [...FOODS.filter((f) => f.free), ...own, ...shared];
 }
 
 export function mealRowToEntry(row: MealRow): MealEntry {

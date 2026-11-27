@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -52,6 +53,7 @@ private data class TabItem(val route: String, val label: String, val icon: Image
 private val TABS = listOf(
     TabItem("home", "خانه", Icons.Filled.Home),
     TabItem("log", "ثبت وعده", Icons.Filled.AddCircle),
+    TabItem("mealplan", "برنامه", Icons.Filled.CalendarMonth),
     TabItem("reports", "گزارش", Icons.Filled.BarChart),
     TabItem("club", "باشگاه", Icons.Filled.CardGiftcard),
     TabItem("profile", "نمایه", Icons.Filled.Person),
@@ -202,11 +204,17 @@ fun BoshghabYarApp(app: AppState) {
                 arguments = listOf(navArgument("camera") { type = NavType.BoolType; defaultValue = false }),
             ) { entry ->
                 MainScaffold(app, navController) {
-                    LogScreen(app, autoCamera = entry.arguments?.getBoolean("camera") == true, onOpenSuggestions = { navController.navigate("suggestions") })
+                    LogScreen(app, autoCamera = entry.arguments?.getBoolean("camera") == true, onOpenSuggestions = { navController.navigate("suggestions") }, onOpenScanFood = { navController.navigate("scanfood") })
                 }
             }
             composable("reports") {
                 MainScaffold(app, navController) { ReportsScreen(app, onOpenClub = { navController.navigateToTab("club") }) }
+            }
+            composable("mealplan") {
+                MainScaffold(app, navController) { MealPlanScreen(app) }
+            }
+            composable("scanfood") {
+                DetailScaffold(app, "افزودن محصول با بارکد", onBack = { navController.popBackStack() }) { ScanFoodScreen(app) }
             }
             composable("club") {
                 MainScaffold(app, navController) { ClubScreen(app) }

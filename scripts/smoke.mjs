@@ -202,6 +202,26 @@ async function main() {
   const badJson = await fetch(`${BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{bad' });
   check('malformed JSON returns 400', badJson.status === 400);
 
+  // ---------- برنامهٔ غذایی و جمع‌سپاری بارکد ----------
+  const plan = await call('/api/mealplan?days=7', { token: legacy });
+  check('meal plan returns 7 days', plan.status === 200 && plan.body.plan.days.length === 7 && plan.body.plan.days[0].meals.length === 4, `days=${plan.body.plan?.days?.length}`);
+
+  const scanBarcode = String(Math.floor(1000000000000 + Math.random() * 8999999999999));
+  const scan = await call('/api/foods/scan', { method: 'POST', token: legacy, body: {
+    barcode: scanBarcode, nameFa: 'بیسکویت آزمایشی', kcalPer100g: 450, servingGrams: 30, servingLabel: 'عدد', priceIRR: 5000,
+  } });
+  check('barcode contribution creates shared food', scan.status === 201 && scan.body.alreadyExists === false && scan.body.tokensEarned === 5, `status=${scan.status}`);
+  const scanDup = await call('/api/foods/scan', { method: 'POST', token: legacy, body: {
+    barcode: scanBarcode, nameFa: 'بیسکویت آزمایشی', kcalPer100g: 450, servingGrams: 30, servingLabel: 'عدد',
+  } });
+  check('duplicate barcode returns existing without reward', scanDup.status === 200 && scanDup.body.alreadyExists === true && !('tokensEarned' in scanDup.body));
+  const barcodeLookup = await call(`/api/foods/barcode/${scanBarcode}`, { token: legacy });
+  check('barcode lookup works', barcodeLookup.status === 200 && barcodeLookup.body.nameFa === 'بیسکویت آزمایشی');
+  const foodsAfterScan = await call('/api/foods', { token: legacy });
+  check('shared food available to everyone', foodsAfterScan.body.foods.some((f) => f.id === scan.body.id), `count=${foodsAfterScan.body.count}`);
+  const badBarcode = await call('/api/foods/scan', { method: 'POST', token: legacy, body: { barcode: 'abc', nameFa: 'بد', kcalPer100g: 450 } });
+  check('invalid barcode rejected', badBarcode.status === 400);
+
   // ---------- نشست و حریم خصوصی ----------
   const out = await call('/api/auth/logout', { method: 'POST', token: legacy });
   const after = await call('/api/me', { token: legacy });

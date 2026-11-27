@@ -5,3 +5,5 @@ export * from './plan.js';
 export * from './phone.js';
 export * from './club.js';
 export * from './reports.js';
+export * from './recipes.js';
+export * from './mealplan.js';

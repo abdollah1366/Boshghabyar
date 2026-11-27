@@ -243,7 +243,7 @@ private fun ErrorState(message: String, retry: () -> Unit) {
 // ============================ ثبت وعده ============================
 
 @Composable
-fun LogScreen(app: AppState, autoCamera: Boolean, onOpenSuggestions: () -> Unit) {
+fun LogScreen(app: AppState, autoCamera: Boolean, onOpenSuggestions: () -> Unit, onOpenScanFood: () -> Unit) {
     val api = app.api
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -328,6 +328,7 @@ fun LogScreen(app: AppState, autoCamera: Boolean, onOpenSuggestions: () -> Unit)
                 AppButton("عکس بگیر", ::capturePhoto, Modifier.weight(1f), loading = analyzing)
                 AppButton("از گالری", { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f), variant = ButtonVariant.Secondary)
             }
+            AppButton("افزودن محصول با بارکد", onOpenScanFood, variant = ButtonVariant.Outline, modifier = Modifier.padding(top = 8.dp))
             if (recognition != null) {
                 val rec = recognition!!
                 Spacer(Modifier.height(10.dp))

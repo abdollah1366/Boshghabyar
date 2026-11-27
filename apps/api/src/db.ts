@@ -207,6 +207,14 @@ if (!tableColumns('meals').some((c) => c.name === 'source')) {
   db.exec("ALTER TABLE meals ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'");
 }
 
+if (!tableColumns('custom_foods').some((c) => c.name === 'barcode')) {
+  db.exec('ALTER TABLE custom_foods ADD COLUMN barcode TEXT');
+}
+if (!tableColumns('custom_foods').some((c) => c.name === 'shared')) {
+  db.exec('ALTER TABLE custom_foods ADD COLUMN shared INTEGER NOT NULL DEFAULT 0');
+}
+db.exec('CREATE INDEX IF NOT EXISTS idx_custom_foods_barcode ON custom_foods(barcode) WHERE barcode IS NOT NULL');
+
 export interface UserRow {
   id: string;
   name: string;

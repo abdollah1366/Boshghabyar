@@ -5,18 +5,20 @@ import { z } from 'zod';
 
 import {
   buildExplanationPrompt,
+  buildMealPlan,
   hasFeature,
   historyCutoffDate,
   suggestAlternatives,
 } from '@boshghabyar/core';
+import { TOKEN_RULES } from '@boshghabyar/core';
 
 import { authRequired, publicUser } from '../auth.js';
 import type { AuthRequest } from '../auth.js';
-import { awardFirstMealOfDay, rewardReferrerIfFirstMeal } from '../club.js';
+import { addTokens, awardFirstMealOfDay, rewardReferrerIfFirstMeal } from '../club.js';
 import { config } from '../config.js';
 import { db, findUserById, now, planOf, today, trackEvent } from '../db.js';
 import type { MealRow } from '../db.js';
-import { addDays, foodsFor, goalOf, mealRowToEntry, mealsOf, parse } from '../domain.js';
+import { addDays, foodsFor, goalOf, mealRowToEntry, mealsOf, parse, sharedFoods } from '../domain.js';
 
 export const appRouter = Router();
 appRouter.use(authRequired);
@@ -58,6 +60,94 @@ appRouter.post('/foods/custom', (req: AuthRequest, res) => {
   );
   trackEvent('custom_food.created', req.user!.id, { id });
   res.status(201).json({ id });
+});
+
+// ---------- جمع‌سپاری غذا با بارکد ----------
+
+const normalizeBarcode = (input: string): string => input.replace(/\D/g, '');
+
+const scanFoodSchema = z.object({
+  barcode: z.string().min(4).max(20).transform(normalizeBarcode).refine((v) => /^\d{4,20}$/.test(v), 'بارکد معتبر نیست'),
+  nameFa: z.string().trim().min(2).max(80),
+  category: z.enum(['main', 'rice', 'soup', 'bread', 'dairy', 'egg', 'fruit', 'legume', 'local']).default('local'),
+  kcalPer100g: z.number().min(0).max(900),
+  servingGrams: z.number().int().min(1).max(2000).default(100),
+  servingLabel: z.string().trim().min(1).max(60).default('سهم'),
+  priceIRR: z.number().int().min(0).max(10_000_000).optional(),
+});
+
+appRouter.post('/foods/scan', (req: AuthRequest, res) => {
+  const input = parse(scanFoodSchema, req.body);
+  const user = req.user!;
+
+  // اگر بارکد از قبل ثبت شده باشد، همان غذا برمی‌گردد (بدون ژتون تکراری)
+  const existing = db
+    .prepare('SELECT * FROM custom_foods WHERE barcode = ?')
+    .get(input.barcode) as unknown as
+    | { id: string; user_id: string; name_fa: string; category: string; per100g: string; serving_grams: number; serving_label: string; price_irr: number }
+    | undefined;
+  if (existing) {
+    res.json({
+      id: existing.id,
+      alreadyExists: true,
+      nameFa: existing.name_fa,
+      kcalPer100g: JSON.parse(existing.per100g).kcal,
+      servingGrams: existing.serving_grams,
+    });
+    return;
+  }
+
+  const id = `scan-${randomUUID()}`;
+  const per100g = {
+    kcal: input.kcalPer100g,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+  };
+  db.prepare(`
+    INSERT INTO custom_foods (id, user_id, name_fa, category, per100g, serving_grams, serving_label, price_irr, barcode, shared, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+  `).run(
+    id, user.id, input.nameFa, input.category, JSON.stringify(per100g),
+    input.servingGrams, input.servingLabel, input.priceIRR ?? 0, input.barcode, now(),
+  );
+
+  const reward = addTokens(user.id, TOKEN_RULES.foodContribution, 'food-contribution', input.barcode);
+  trackEvent('food.contributed', user.id, { barcode: input.barcode, foodId: id });
+  res.status(201).json({
+    id,
+    alreadyExists: false,
+    nameFa: input.nameFa,
+    kcalPer100g: input.kcalPer100g,
+    servingGrams: input.servingGrams,
+    tokensEarned: reward.ok ? TOKEN_RULES.foodContribution : 0,
+    balance: reward.balance,
+  });
+});
+
+appRouter.get('/foods/barcode/:barcode', (req: AuthRequest, res) => {
+  const barcode = normalizeBarcode(req.params.barcode ?? '');
+  const row = db
+    .prepare('SELECT * FROM custom_foods WHERE barcode = ?')
+    .get(barcode) as unknown as
+    | { id: string; name_fa: string; category: string; per100g: string; serving_grams: number; serving_label: string; price_irr: number }
+    | undefined;
+  if (!row) {
+    res.status(404).json({ error: 'این بارکد در پایگاه‌داده ثبت نشده است' });
+    return;
+  }
+  res.json({ id: row.id, nameFa: row.name_fa, kcalPer100g: JSON.parse(row.per100g).kcal, servingGrams: row.serving_grams, servingLabel: row.serving_label, priceIRR: row.price_irr });
+});
+
+// ---------- برنامهٔ غذایی هفتگی ----------
+
+appRouter.get('/mealplan', (req: AuthRequest, res) => {
+  const days = Math.min(14, Math.max(1, Number(req.query.days ?? 7) || 7));
+  const user = req.user!;
+  const plan = buildMealPlan(days, goalOf(user));
+  res.setHeader('Cache-Control', 'private, max-age=300');
+  res.json({ plan, planAvailable: true, goal: goalOf(user) });
 });
 
 const mealSchema = z.object({

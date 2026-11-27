@@ -577,4 +577,95 @@ val LEDGER_REASON_LABELS = mapOf(
     "research-consent" to "مشارکت پژوهشی",
     "admin-grant" to "هدیهٔ مدیر",
     "demo-topup" to "شارژ آزمایشی",
+    "food-contribution" to "ثبت محصول با بارکد",
 )
+
+// ---------- برنامهٔ غذایی ----------
+
+data class RecipeIngredient(val name: String, val amount: String)
+
+data class Recipe(
+    val id: String,
+    val titleFa: String,
+    val mealType: String,
+    val kcal: Int,
+    val protein: Int,
+    val servings: Int,
+    val priceIRRPerServing: Int,
+    val minutes: Int,
+    val difficulty: String,
+    val ingredients: List<RecipeIngredient>,
+    val steps: List<String>,
+    val tags: List<String>,
+) {
+    companion object {
+        fun from(o: JSONObject): Recipe {
+            val perServing = o.optJSONObject("perServing")
+            val ingredients = mutableListOf<RecipeIngredient>()
+            o.optJSONArray("ingredients")?.let { arr ->
+                for (i in 0 until arr.length()) {
+                    val ing = arr.optJSONObject(i)
+                    ingredients.add(RecipeIngredient(ing.optString("name"), ing.optString("amount")))
+                }
+            }
+            val steps = mutableListOf<String>()
+            o.optJSONArray("steps")?.let { arr -> for (i in 0 until arr.length()) steps.add(arr.optString(i)) }
+            val tags = mutableListOf<String>()
+            o.optJSONArray("tags")?.let { arr -> for (i in 0 until arr.length()) tags.add(arr.optString(i)) }
+            return Recipe(
+                id = o.optString("id"),
+                titleFa = o.optString("titleFa"),
+                mealType = o.optString("mealType"),
+                kcal = perServing?.optInt("kcal") ?: 0,
+                protein = perServing?.optInt("protein") ?: 0,
+                servings = o.optInt("servings", 1),
+                priceIRRPerServing = o.optInt("priceIRRPerServing"),
+                minutes = o.optInt("minutes"),
+                difficulty = o.optString("difficulty", "آسان"),
+                ingredients = ingredients,
+                steps = steps,
+                tags = tags,
+            )
+        }
+    }
+}
+
+data class PlannedMeal(val mealType: String, val recipe: Recipe)
+
+data class MealPlanDay(
+    val weekdayFa: String,
+    val meals: List<PlannedMeal>,
+    val totalKcal: Int,
+    val totalProtein: Int,
+    val totalPriceIRR: Int,
+)
+
+data class MealPlan(val days: List<MealPlanDay>, val averageKcal: Int, val averagePriceIRR: Int) {
+    companion object {
+        fun from(o: JSONObject): MealPlan {
+            val days = mutableListOf<MealPlanDay>()
+            o.optJSONArray("days")?.let { arr ->
+                for (i in 0 until arr.length()) {
+                    val d = arr.optJSONObject(i)
+                    val meals = mutableListOf<PlannedMeal>()
+                    d.optJSONArray("meals")?.let { ma ->
+                        for (j in 0 until ma.length()) {
+                            val m = ma.optJSONObject(j)
+                            meals.add(PlannedMeal(m.optString("mealType"), Recipe.from(m.optJSONObject("recipe"))))
+                        }
+                    }
+                    days.add(
+                        MealPlanDay(
+                            weekdayFa = d.optString("weekdayFa"),
+                            meals = meals,
+                            totalKcal = d.optInt("totalKcal"),
+                            totalProtein = d.optInt("totalProtein"),
+                            totalPriceIRR = d.optInt("totalPriceIRR"),
+                        )
+                    )
+                }
+            }
+            return MealPlan(days = days, averageKcal = o.optInt("averageKcal"), averagePriceIRR = o.optInt("averagePriceIRR"))
+        }
+    }
+}

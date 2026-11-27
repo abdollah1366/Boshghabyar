@@ -10,6 +10,7 @@ export const TOKEN_RULES = {
   streakBonus: 10,
   streakEvery: 7,
   maxInviterRewardsPerMonth: 20,
+  foodContribution: 5,
 } as const;
 
 export type LevelId = 'bronze' | 'silver' | 'gold' | 'diamond';
