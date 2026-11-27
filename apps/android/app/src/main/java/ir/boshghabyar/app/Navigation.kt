@@ -1,201 +1,223 @@
-package ir.boshghabyar.app
+﻿package ir.boshghabyar.app
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import kotlinx.coroutines.launch
 
-private data class TabItem(val route: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+private data class TabItem(val route: String, val label: String, val icon: ImageVector)
 
 private val TABS = listOf(
     TabItem("home", "خانه", Icons.Filled.Home),
     TabItem("log", "ثبت وعده", Icons.Filled.AddCircle),
     TabItem("reports", "گزارش", Icons.Filled.BarChart),
+    TabItem("club", "باشگاه", Icons.Filled.CardGiftcard),
     TabItem("profile", "نمایه", Icons.Filled.Person),
 )
 
+private fun NavHostController.navigateToTab(route: String) {
+    navigate(route) {
+        popUpTo("home") { inclusive = false }
+        launchSingleTop = true
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScaffold(
-    navController: NavHostController,
-    onSignOut: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+private fun MainScaffold(app: AppState, navController: NavHostController, content: @Composable () -> Unit) {
+    val route = navController.currentBackStackEntryAsState().value?.destination?.route?.substringBefore('?')
+    val user = app.user
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(app.snackbar) },
         topBar = {
             TopAppBar(
-                title = { Text("بشقاب‌یار") },
+                title = { Text("بشقاب‌یار", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = MaterialTheme.colorScheme.primary, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 actions = {
-                    TextButton(onClick = onSignOut) { Text("خروج") }
+                    if (user != null) {
+                        PlanBadge(user.isPro)
+                        TokenChip(user.tokenBalance) { navController.navigateToTab("club") }
+                    }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 TABS.forEach { tab ->
                     NavigationBarItem(
-                        selected = currentRoute == tab.route,
-                        onClick = {
-                            navController.navigate(tab.route) {
-                                popUpTo("home") { inclusive = false }
-                                launchSingleTop = true
-                            }
-                        },
+                        selected = route == tab.route,
+                        onClick = { navController.navigateToTab(tab.route) },
                         icon = { Icon(tab.icon, contentDescription = tab.label) },
-                        label = { Text(tab.label) },
+                        label = { Text(tab.label, style = MaterialTheme.typography.labelSmall, maxLines = 1) },
                     )
                 }
             }
         },
-    ) { innerPadding ->
-        androidx.compose.foundation.layout.Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            content()
-        }
+    ) { inner ->
+        Box(Modifier.fillMaxSize().padding(inner)) { content() }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SuggestionsScaffold(
-    navController: NavHostController,
-    content: @Composable () -> Unit,
-) {
+private fun DetailScaffold(app: AppState, title: String, onBack: () -> Unit, content: @Composable () -> Unit) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(app.snackbar) },
         topBar = {
             TopAppBar(
-                title = { Text("پیشنهادها") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "بازگشت")
-                    }
-                },
+                title = { Text(title) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "بازگشت") } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
-    ) { innerPadding ->
-        androidx.compose.foundation.layout.Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            content()
-        }
+    ) { inner ->
+        Box(Modifier.fillMaxSize().padding(inner)) { content() }
     }
 }
 
 @Composable
-fun BoshghabYarApp(api: ApiClient, store: SessionStore) {
+fun BoshghabYarApp(app: AppState) {
     val navController = rememberNavController()
-    var user by remember { mutableStateOf<AppUser?>(null) }
+    val scope = rememberCoroutineScope()
     var loading by remember { mutableStateOf(true) }
+    var startupError by remember { mutableStateOf<String?>(null) }
+    var attempt by remember { mutableStateOf(0) }
 
-    fun signOut() {
-        store.clear()
-        api.token = null
-        user = null
-        navController.navigate("login") {
-            popUpTo(0) { inclusive = true }
+    fun clearSession() {
+        app.store.clear()
+        app.api.token = null
+        app.user = null
+        navController.navigate("login") { popUpTo(0) { inclusive = true } }
+    }
+
+    fun logout() {
+        scope.launch {
+            runCatching { app.api.post("/api/auth/logout") }
+            clearSession()
         }
     }
 
-    fun onAuthenticated(value: AppUser) {
-        user = value
-        navController.navigate("home") {
-            popUpTo(0) { inclusive = true }
-        }
+    fun onAuthenticated(user: AppUser, isNew: Boolean) {
+        app.user = user
+        navController.navigate("home") { popUpTo(0) { inclusive = true } }
+        if (isNew) app.notify(scope, "خوش آمدید! ژتون هدیه به حساب شما اضافه شد")
     }
 
-    LaunchedEffect(Unit) {
-        val token = store.token
+    LaunchedEffect(attempt) {
+        loading = true
+        startupError = null
+        val token = app.store.token
         if (token != null) {
-            api.token = token
-            try {
-                user = api.me()
-            } catch (e: Exception) {
-                store.clear()
-                api.token = null
-            }
+            app.api.token = token
+            apiResult { app.api.me() }
+                .onSuccess { app.user = it }
+                .onFailure { e ->
+                    if (e is ApiException && e.status == 0) {
+                        startupError = ApiClient.message(e)
+                        return@LaunchedEffect
+                    }
+                    app.store.clear()
+                    app.api.token = null
+                }
         }
+        app.api.onUnauthorized = { clearSession() }
         loading = false
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         if (loading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                androidx.compose.material3.CircularProgressIndicator()
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            return@CompositionLocalProvider
+        }
+        if (startupError != null) {
+            Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    ErrorText(startupError)
+                    AppButton("تلاش دوباره", onClick = { attempt = attempt + 1 })
+                }
             }
-        } else {
-            NavHost(
-                navController = navController,
-                startDestination = if (user != null) "home" else "login",
-            ) {
-                composable("login") {
-                    LoginScreen(api, store, ::onAuthenticated)
+            return@CompositionLocalProvider
+        }
+        NavHost(
+            navController = navController,
+            startDestination = if (app.user != null) "home" else "login",
+        ) {
+            composable("login") { LoginScreen(app, ::onAuthenticated) }
+            composable("home") {
+                MainScaffold(app, navController) {
+                    HomeScreen(
+                        app,
+                        onNavigate = { navController.navigateToTab(it) },
+                        onOpenCamera = { navController.navigate("log?camera=true") { launchSingleTop = true } },
+                        onOpenSuggestions = { navController.navigate("suggestions") },
+                    )
                 }
-                composable("home") {
-                    user?.let { current ->
-                        MainScaffold(navController, ::signOut) {
-                            HomeScreen(api, current) { route -> navController.navigate(route) }
-                        }
-                    }
+            }
+            composable(
+                route = "log?camera={camera}",
+                arguments = listOf(navArgument("camera") { type = NavType.BoolType; defaultValue = false }),
+            ) { entry ->
+                MainScaffold(app, navController) {
+                    LogScreen(app, autoCamera = entry.arguments?.getBoolean("camera") == true, onOpenSuggestions = { navController.navigate("suggestions") })
                 }
-                composable("log") {
-                    user?.let {
-                        MainScaffold(navController, ::signOut) { LogScreen(api) }
-                    }
-                }
-                composable("reports") {
-                    user?.let { current ->
-                        MainScaffold(navController, ::signOut) {
-                            ReportsScreen(api, current) { user = it }
-                        }
-                    }
-                }
-                composable("profile") {
-                    user?.let { current ->
-                        MainScaffold(navController, ::signOut) {
-                            ProfileScreen(api, current, { user = it }, ::signOut)
-                        }
-                    }
-                }
-                composable("suggestions") {
-                    SuggestionsScaffold(navController) { SuggestionsScreen(api) }
-                }
+            }
+            composable("reports") {
+                MainScaffold(app, navController) { ReportsScreen(app, onOpenClub = { navController.navigateToTab("club") }) }
+            }
+            composable("club") {
+                MainScaffold(app, navController) { ClubScreen(app) }
+            }
+            composable("profile") {
+                MainScaffold(app, navController) { ProfileScreen(app, ::logout, ::clearSession) }
+            }
+            composable("suggestions") {
+                DetailScaffold(app, "پیشنهادها", onBack = { navController.popBackStack() }) { SuggestionsScreen(app) }
             }
         }
     }
 }
+

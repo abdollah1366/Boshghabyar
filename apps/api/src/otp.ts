@@ -64,7 +64,7 @@ export async function requestOtp(phone: string, ip: string | undefined): Promise
     throw new OtpError('تعداد درخواست کد برای این شماره زیاد است؛ یک ساعت بعد دوباره امتحان کنید', 429, 3600);
   }
 
-  const code = String(randomInt(10_000, 100_000));
+  const code = String(randomInt(1_000, 10_000));
   db.prepare('UPDATE otp_codes SET consumed = 1 WHERE phone = ? AND consumed = 0').run(phone);
   const id = randomUUID();
   db.prepare(

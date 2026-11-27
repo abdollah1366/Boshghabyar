@@ -165,12 +165,18 @@ async function main() {
     check('recognition unavailable returns manual fallback', badImage.status === 503 || badImage.status === 400);
   }
 
-  // ---------- مسیر قدیمی ایمیل/رمز و قواعد طرح ----------
+  // ---------- ورود قدیمی با ایمیل/رمز غیرفعال است؛ فقط مدیر ----------
   const registered = await call('/api/auth/register', { method: 'POST', body: {
     name: 'کاربر آزمایشی', email: `smoke-${crypto.randomUUID()}@example.com`, password: 'Smoke@12345',
   } });
-  check('legacy register still works', registered.status === 201 && registered.body.user.plan === 'free');
-  const legacy = registered.body.token;
+  check('email register disabled', registered.status === 404, `status=${registered.status}`);
+  const userLoginBlocked = await call('/api/auth/login', { method: 'POST', body: { email: 'demo@boshghabyar.ir', password: 'Demo@12345' } });
+  check('email login blocked for non-admin', userLoginBlocked.status === 403, `status=${userLoginBlocked.status}`);
+
+  // کاربر رایگان تازه با OTP برای قواعد طرح
+  const phoneC = randomPhone();
+  const c = await otpLogin(phoneC);
+  const legacy = c.verified.body.token;
   const foods = await call('/api/foods', { token: legacy });
   check('free food list = 20', foods.status === 200 && foods.body.count === 20, `count=${foods.body.count}`);
   check('pro foods hidden from free', !foods.body.foods.some((f) => f.id === 'kashke-bademjan'));

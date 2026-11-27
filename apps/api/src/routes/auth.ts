@@ -59,7 +59,7 @@ authRouter.post(
 
 const verifySchema = z.object({
   phone: phoneSchema,
-  code: z.string().transform((v) => toLatinDigits(v).replace(/\D/g, '')).pipe(z.string().regex(/^\d{5}$/)),
+  code: z.string().transform((v) => toLatinDigits(v).replace(/\D/g, '')).pipe(z.string().regex(/^\d{4}$/)),
   name: z.string().trim().min(2).max(60).optional(),
   referralCode: z.string().max(20).optional(),
   researchConsent: z.boolean().optional(),
@@ -110,35 +110,9 @@ authRouter.post('/demo', authLimiter, (req, res) => {
   res.json({ token: createSession(user, req.header('user-agent')), user: publicUser(user), isNew: false });
 });
 
-const registerSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  email: z.string().email().max(120),
-  password: z.string().min(8).max(128),
-  phone: phoneSchema.optional(),
-  referralCode: z.string().max(20).optional(),
-  researchConsent: z.boolean().optional(),
-});
-
-authRouter.post('/register', authLimiter, (req, res) => {
-  const input = parse(registerSchema, req.body);
-  const email = input.email.toLowerCase().trim();
-  if (findUserByEmail(email)) {
-    res.status(409).json({ error: 'این ایمیل قبلاً ثبت شده است' });
-    return;
-  }
-  if (input.phone && findUserByPhone(input.phone)) {
-    res.status(409).json({ error: 'این شماره قبلاً ثبت شده است' });
-    return;
-  }
-  const user = createUser({
-    name: input.name,
-    email,
-    phone: input.phone ?? null,
-    passwordHash: bcrypt.hashSync(input.password, 10),
-    referralCode: input.referralCode,
-    researchConsent: input.researchConsent ?? false,
-  });
-  res.status(201).json({ token: createSession(user, req.header('user-agent')), user: publicUser(user) });
+authRouter.post('/register', authLimiter, (_req, res) => {
+  // ثبت‌نام با ایمیل/رمز غیرفعال شده است؛ کاربران فقط با شمارهٔ موبایل و کد پیامکی ثبت‌نام می‌کنند.
+  res.status(404).json({ error: 'ثبت‌نام با ایمیل غیرفعال است؛ با شمارهٔ موبایل وارد شوید' });
 });
 
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
@@ -148,6 +122,10 @@ authRouter.post('/login', authLimiter, (req, res) => {
   const user = findUserByEmail(input.email);
   if (!user?.password_hash || !bcrypt.compareSync(input.password, user.password_hash)) {
     res.status(401).json({ error: 'ایمیل یا رمز عبور درست نیست' });
+    return;
+  }
+  if (user.role !== 'admin') {
+    res.status(403).json({ error: 'ورود با ایمیل و رمز فقط برای مدیران است؛ کاربران با شمارهٔ موبایل وارد می‌شوند' });
     return;
   }
   if (user.status === 'blocked') {
