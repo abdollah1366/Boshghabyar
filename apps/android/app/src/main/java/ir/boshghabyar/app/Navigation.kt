@@ -220,7 +220,10 @@ fun BoshghabYarApp(app: AppState) {
                 MainScaffold(app, navController) { ClubScreen(app) }
             }
             composable("profile") {
-                MainScaffold(app, navController) { ProfileScreen(app, ::logout, ::clearSession) }
+                MainScaffold(app, navController) { ProfileScreen(app, ::logout, ::clearSession, onOpenHealth = { navController.navigate("health") }) }
+            }
+            composable("health") {
+                DetailScaffold(app, "شاخص‌های سلامتی", onBack = { navController.popBackStack() }) { HealthScreen(app) }
             }
             composable("suggestions") {
                 DetailScaffold(app, "پیشنهادها", onBack = { navController.popBackStack() }) { SuggestionsScreen(app) }

@@ -151,6 +151,28 @@ adminRouter.get('/users/:id', (req: AuthRequest, res) => {
   const ledger = db
     .prepare('SELECT delta, reason, balance_after, created_at FROM token_ledger WHERE user_id = ? ORDER BY created_at DESC LIMIT 50')
     .all(user.id);
+  const health = db
+    .prepare('SELECT type, value, unit, measured_at FROM health_measurements WHERE user_id = ? ORDER BY measured_at DESC LIMIT 200')
+    .all(user.id) as unknown as Array<{ type: string; value: number; unit: string; measured_at: string }>;
+  const healthSummary = [...new Set(health.map((h) => h.type))].map((type) => {
+    const list = health.filter((h) => h.type === type).sort((a, b) => (a.measured_at < b.measured_at ? -1 : 1));
+    const values = list.map((h) => h.value);
+    const mean = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+    return {
+      type,
+      count: values.length,
+      latest: list[0]?.value ?? null,
+      first: list.at(-1)?.value ?? null,
+      mean: Math.round(mean * 10) / 10,
+      min: values.length ? Math.min(...values) : null,
+      max: values.length ? Math.max(...values) : null,
+      trend: list.map((h) => ({ date: h.measured_at, value: h.value })),
+      unit: list[0]?.unit ?? '',
+    };
+  });
+  const mealTrend = db
+    .prepare("SELECT date, COUNT(*) AS n, SUM(grams) AS grams FROM meals WHERE user_id = ? GROUP BY date ORDER BY date")
+    .all(user.id);
   audit(req.user!.id, 'admin.users.view', user.id, {}, clientIp(req));
   res.json({
     user: adminUser(user),
@@ -164,7 +186,10 @@ adminRouter.get('/users/:id', (req: AuthRequest, res) => {
       goalType: user.goal_type,
     },
     mealCount: scalar('SELECT COUNT(*) AS n FROM meals WHERE user_id = ?', user.id),
+    activeDays: scalar('SELECT COUNT(DISTINCT date) AS n FROM meals WHERE user_id = ?', user.id),
     meals: meals.map((m) => ({ ...m, foodName: foods.get(m.food_id)?.nameFa ?? m.food_id })),
+    mealTrend,
+    health: healthSummary,
     ledger,
   });
 });

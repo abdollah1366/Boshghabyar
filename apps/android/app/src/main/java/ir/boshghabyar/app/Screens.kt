@@ -125,6 +125,17 @@ fun HomeScreen(
     ) {
         ScreenHeader("سلام ${user.name} 👋", "خلاصهٔ تغذیهٔ امروز شما")
         val current = data
+        if (current != null && current.report.entryCount == 0) {
+            AppCard {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(Icons.Filled.EventAvailable, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(26.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("هنوز وعده‌ای ثبت نکرده‌اید", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text("برای دیدن پیشرفت امروز، اولین وعدهٔ خود را ثبت کنید.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
         when {
             current != null -> {
                 TodayCard(current.report)
@@ -832,7 +843,7 @@ fun ClubScreen(app: AppState) {
 // ============================ نمایه ============================
 
 @Composable
-fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Unit) {
+fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Unit, onOpenHealth: () -> Unit = {}) {
     val api = app.api
     val scope = rememberCoroutineScope()
     val user = app.user ?: return
@@ -925,6 +936,7 @@ fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Uni
             if (!user.isPro) AppButton("ارتقا به حرفه‌ای", ::upgrade, variant = ButtonVariant.Accent, loading = busy)
         }
 
+        AppButton("شاخص‌های سلامتی (قند، وزن، فشار و …)", onOpenHealth, variant = ButtonVariant.Secondary)
         AppButton("خروج از حساب", onLogout, variant = ButtonVariant.Secondary)
         AppButton("خروج از همهٔ دستگاه‌ها", {
             scope.launch { apiResult { api.post("/api/auth/logout-all") }; onSessionEnded() }
@@ -985,8 +997,7 @@ fun SuggestionsScreen(app: AppState) {
             if (loading) LoadingText()
             else if (meals.isEmpty()) EmptyState(Icons.Filled.Restaurant, "ابتدا یک وعده ثبت کنید")
             else {
-                LazyColumn(Modifier.fillMaxWidth()) {
-                    items(meals) { meal ->
+                meals.forEach { meal ->
                         Column(
                             Modifier.fillMaxWidth().clickable {
                                 scope.launch {
@@ -1010,7 +1021,6 @@ fun SuggestionsScreen(app: AppState) {
                         }
                     }
                 }
-            }
         }
         AppCard {
             SectionTitle("نتیجه")
@@ -1026,7 +1036,7 @@ fun SuggestionsScreen(app: AppState) {
 }
 
 @Composable
-private fun EmptyText(text: String) {
+fun EmptyText(text: String) {
     Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
 }
 

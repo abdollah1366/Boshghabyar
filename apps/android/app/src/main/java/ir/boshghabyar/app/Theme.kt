@@ -107,6 +107,33 @@ val LightScheme = androidx.compose.material3.lightColorScheme(
     outlineVariant = AppColors.Border,
 )
 
+val DarkScheme = androidx.compose.material3.darkColorScheme(
+    primary = Color(0xFF5EC9E3),
+    onPrimary = Color(0xFF003640),
+    primaryContainer = Color(0xFF0B4D5E),
+    onPrimaryContainer = Color(0xFFC0EAF5),
+    secondary = Color(0xFFF2A7DF),
+    onSecondary = Color(0xFF4E1C42),
+    secondaryContainer = Color(0xFF6A2C5B),
+    onSecondaryContainer = Color(0xFFFBD3F1),
+    tertiary = Color(0xFFFFB39A),
+    onTertiary = Color(0xFF4E1605),
+    tertiaryContainer = Color(0xFF6B2B17),
+    onTertiaryContainer = Color(0xFFFFDBCF),
+    background = Color(0xFF14181A),
+    onBackground = Color(0xFFE0E4E6),
+    surface = Color(0xFF1A1F21),
+    onSurface = Color(0xFFE0E4E6),
+    surfaceVariant = Color(0xFF2A3033),
+    onSurfaceVariant = Color(0xFFB8C2C6),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    outline = Color(0xFF5A6468),
+    outlineVariant = Color(0xFF3A4448),
+)
+
 // ---------- کامپوننت‌های مشترک ----------
 
 @Composable

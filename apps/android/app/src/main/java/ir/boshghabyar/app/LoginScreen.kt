@@ -119,21 +119,6 @@ fun LoginScreen(app: AppState, onAuthenticated: (AppUser, Boolean) -> Unit) {
         }
     }
 
-    fun demo() {
-        scope.launch {
-            busy = true
-            error = null
-            apiResult { api.auth("/api/auth/demo", JSONObject()) }
-                .onSuccess { (token, user) ->
-                    api.token = token
-                    store.token = token
-                    onAuthenticated(user, false)
-                }
-                .onFailure { error = ApiClient.message(it) }
-            busy = false
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -220,10 +205,6 @@ fun LoginScreen(app: AppState, onAuthenticated: (AppUser, Boolean) -> Unit) {
                 }
             }
         }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Text("یا", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        AppButton("ورود آزمایشی یک‌ضرب", ::demo, variant = ButtonVariant.Secondary, enabled = !busy)
 
         Spacer(Modifier.height(12.dp))
         Text(

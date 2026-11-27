@@ -191,6 +191,17 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_recognitions_user_day ON recognitions(user_id, day);
 
+  CREATE TABLE IF NOT EXISTS health_measurements (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    value REAL NOT NULL,
+    unit TEXT NOT NULL,
+    measured_at TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_health_user_type ON health_measurements(user_id, type, measured_at);
+
   CREATE TABLE IF NOT EXISTS admin_audit (
     id TEXT PRIMARY KEY,
     admin_id TEXT NOT NULL,

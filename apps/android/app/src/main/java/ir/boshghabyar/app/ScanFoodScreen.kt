@@ -1,15 +1,10 @@
 package ir.boshghabyar.app
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,70 +19,38 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.io.File
 
 @Composable
 fun ScanFoodScreen(app: AppState) {
     val api = app.api
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var barcode by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var kcal by remember { mutableStateOf("") }
     var servingGrams by remember { mutableStateOf("100") }
     var busy by remember { mutableStateOf(false) }
-    var scanning by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var success by remember { mutableStateOf<String?>(null) }
 
-    val photoUri = remember { mutableStateOf<Uri?>(null) }
-
-    fun decodeBarcode(uri: Uri) {
-        scanning = true
-        error = null
-        val scanner = BarcodeScanning.getClient()
-        val image = try {
-            InputImage.fromFilePath(context, uri)
-        } catch (e: Exception) {
-            scanning = false
-            error = "تصویر خوانده نشد؛ دوباره تلاش کنید"
-            return
+    val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+        val contents = result.contents
+        if (!contents.isNullOrBlank()) {
+            barcode = toLatin(contents).filter { it.isDigit() }
+            error = null
+        } else {
+            error = "بارکدی خوانده نشد؛ دستی وارد کنید"
         }
-        scanner.process(image)
-            .addOnSuccessListener { barcodes ->
-                scanning = false
-                val value = barcodes.firstOrNull()?.rawValue
-                if (value != null) {
-                    barcode = value
-                    error = null
-                } else {
-                    error = "بارکدی پیدا نشد؛ دوباره عکس بگیرید یا دستی وارد کنید"
-                }
-            }
-            .addOnFailureListener {
-                scanning = false
-                error = "خواندن بارکد ناموفق بود؛ دستی وارد کنید"
-            }
     }
 
-    val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-        if (saved) photoUri.value?.let { decodeBarcode(it) }
-    }
-
-    fun capturePhoto() {
-        val dir = File(context.cacheDir, "camera").apply { mkdirs() }
-        val file = File(dir, "barcode_${System.currentTimeMillis()}.jpg")
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        photoUri.value = uri
-        takePicture.launch(uri)
+    fun scan() {
+        val options = ScanOptions().setBeepEnabled(true)
+        scanLauncher.launch(options)
     }
 
     fun submit() {
@@ -99,7 +62,7 @@ fun ScanFoodScreen(app: AppState) {
             busy = true
             error = null
             success = null
-            apiResult {
+            val result = apiResult {
                 api.post(
                     "/api/foods/scan",
                     JSONObject()
@@ -109,17 +72,18 @@ fun ScanFoodScreen(app: AppState) {
                         .put("servingGrams", servingGrams.toIntOrNull() ?: 100)
                         .put("servingLabel", "سهم"),
                 )
-            }.onSuccess { res ->
+            }
+            result.onSuccess { res ->
                 val tokens = res.optInt("tokensEarned", 0)
                 success = if (res.optBoolean("alreadyExists")) {
                     "این محصول قبلاً ثبت شده است و به فهرست غذاها اضافه شد."
                 } else {
                     "محصول ثبت شد و به فهرست غذاها اضافه شد" + if (tokens > 0) " · +${faNumber(tokens)} ژتون" else ""
                 }
-                app.refreshUser()
                 barcode = ""
                 name = ""
                 kcal = ""
+                app.refreshUser()
             }.onFailure { error = ApiClient.message(it) }
             busy = false
         }
@@ -129,8 +93,8 @@ fun ScanFoodScreen(app: AppState) {
         ScreenHeader("افزودن محصول با بارکد", "محصول را اسکن کنید و انرژی آن را از روی بسته وارد کنید")
 
         AppCard {
-            SectionTitle("اسکن بارکد", "عکس بگیرید تا بارکد خودکار خوانده شود")
-            AppButton("اسکن با دوربین", ::capturePhoto, loading = scanning)
+            SectionTitle("اسکن بارکد", "با دوربین، بارکد خودکار خوانده می‌شود")
+            AppButton("اسکن با دوربین", ::scan)
             if (barcode.isNotBlank()) {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                     Text("بارکد: ${faDigits(barcode)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(12.dp))

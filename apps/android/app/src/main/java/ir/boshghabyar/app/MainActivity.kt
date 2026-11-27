@@ -3,6 +3,7 @@ package ir.boshghabyar.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
                 labelMedium = TextStyle(fontFamily = VazirmatnFont, fontSize = 12.sp),
                 labelSmall = TextStyle(fontFamily = VazirmatnFont, fontSize = 10.sp),
             )
-            MaterialTheme(colorScheme = LightScheme, typography = typography) {
+            MaterialTheme(colorScheme = if (isSystemInDarkTheme()) DarkScheme else LightScheme, typography = typography) {
                 BoshghabYarApp(AppState(ApiClient(), SessionStore(this)))
             }
         }

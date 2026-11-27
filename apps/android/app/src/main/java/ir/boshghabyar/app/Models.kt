@@ -566,6 +566,36 @@ val GOAL_LABELS = listOf(
     "budget" to "صرفه‌جویی",
 )
 
+data class HealthMeasurement(val id: String, val type: String, val value: Double, val unit: String, val measuredAt: String) {
+    companion object {
+        fun list(arr: org.json.JSONArray?): List<HealthMeasurement> {
+            val r = mutableListOf<HealthMeasurement>()
+            arr?.let { for (i in 0 until it.length()) {
+                val o = it.optJSONObject(i)
+                r.add(HealthMeasurement(
+                    id = o.optString("id"),
+                    type = o.optString("type"),
+                    value = o.optDouble("value"),
+                    unit = o.optString("unit"),
+                    measuredAt = o.optString("measured_at"),
+                ))
+            } }
+            return r
+        }
+    }
+}
+
+val HEALTH_TYPE_LABELS = mapOf(
+    "blood_sugar" to "قند خون",
+    "weight" to "وزن",
+    "height" to "قد",
+    "systolic_bp" to "فشار سیستولیک",
+    "diastolic_bp" to "فشار دیاستولیک",
+    "hba1c" to "هموگلوبین A1c",
+    "heart_rate" to "ضربان قلب",
+    "cholesterol" to "کلسترول",
+    "sleep_hours" to "ساعت خواب",
+)
 val LEDGER_REASON_LABELS = mapOf(
     "welcome" to "هدیهٔ خوش‌آمد",
     "checkin" to "حضور روزانه",
@@ -578,6 +608,8 @@ val LEDGER_REASON_LABELS = mapOf(
     "admin-grant" to "هدیهٔ مدیر",
     "demo-topup" to "شارژ آزمایشی",
     "food-contribution" to "ثبت محصول با بارکد",
+    "health-log" to "ثبت شاخص سلامتی",
+    "health-streak" to "پاداش زنجیرهٔ سلامتی",
 )
 
 // ---------- برنامهٔ غذایی ----------

@@ -13,6 +13,7 @@ import { adminRouter } from './routes/admin.js';
 import { appRouter } from './routes/app.js';
 import { authRouter, meRouter } from './routes/auth.js';
 import { clubRouter } from './routes/club.js';
+import { healthRouter } from './routes/health.js';
 import { recognizeRouter } from './routes/recognize.js';
 import { reportsRouter } from './routes/reports.js';
 import { getVisionProvider } from './vision.js';
@@ -75,6 +76,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/me', meRouter);
 app.use('/api/club', clubRouter);
+app.use('/api/health', healthRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/recognize', recognizeRouter);
 app.use('/api/admin', adminRouter);

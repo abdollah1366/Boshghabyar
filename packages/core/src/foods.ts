@@ -18,7 +18,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'joojeh-kebab',
-    nameFa: 'جوجهکباب',
+    nameFa: 'جوجه کباب',
     category: 'main',
     per100g: { kcal: 195, protein: 20, carbs: 8, fat: 9, fiber: 0.5 },
     serving: { grams: 200, labelFa: 'یک پرس معمولی' },
@@ -38,7 +38,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'ghormeh-sabzi',
-    nameFa: 'خورشت قورمهسبزی',
+    nameFa: 'خورشت قورمه سبزی',
     category: 'main',
     per100g: { kcal: 150, protein: 6, carbs: 12, fat: 8, fiber: 3 },
     serving: { grams: 200, labelFa: 'یک کاسه' },
@@ -58,7 +58,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'ash-reshte',
-    nameFa: 'آشرشته',
+    nameFa: 'آش رشته',
     category: 'soup',
     per100g: { kcal: 90, protein: 3, carbs: 15, fat: 2, fiber: 2.5 },
     serving: { grams: 250, labelFa: 'یک کاسه' },
@@ -108,7 +108,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'egh-jaft-abpaz',
-    nameFa: 'تخممرغ آبپز',
+    nameFa: 'تخم مرغ آبپز',
     category: 'egg',
     per100g: { kcal: 155, protein: 13, carbs: 1.1, fat: 11, fiber: 0 },
     serving: { grams: 50, labelFa: 'یک عدد' },
@@ -168,7 +168,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'adas-polo',
-    nameFa: 'عدسپلو',
+    nameFa: 'عدس پلو',
     category: 'legume',
     per100g: { kcal: 160, protein: 6, carbs: 28, fat: 3, fiber: 4 },
     serving: { grams: 200, labelFa: 'یک کاسه' },
@@ -178,7 +178,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'sabzi-polo-mahi',
-    nameFa: 'سبزیپلو با ماهی',
+    nameFa: 'سبزی پلو با ماهی',
     category: 'main',
     per100g: { kcal: 180, protein: 14, carbs: 20, fat: 6, fiber: 2 },
     serving: { grams: 220, labelFa: 'یک پرس معمولی' },
@@ -218,7 +218,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'shole-zard',
-    nameFa: 'شلهزرد',
+    nameFa: 'شله زرد',
     category: 'local',
     per100g: { kcal: 210, protein: 4, carbs: 42, fat: 3, fiber: 1 },
     serving: { grams: 150, labelFa: 'یک کاسه' },
@@ -248,7 +248,7 @@ export const FOODS: Food[] = [
   },
   {
     id: 'salat-olivieh',
-    nameFa: 'سالات الیویه',
+    nameFa: 'سالاد الیویه',
     category: 'main',
     per100g: { kcal: 200, protein: 5, carbs: 15, fat: 14, fiber: 2 },
     serving: { grams: 120, labelFa: 'یک کاسه' },
