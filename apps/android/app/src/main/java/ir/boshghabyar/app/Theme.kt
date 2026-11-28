@@ -46,7 +46,28 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
 
-// ---------- فونت و رنگ ----------
+import android.content.Context
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+
+/** تم روشن/تیره — پیش‌فرض روشن */
+@Stable
+object ThemeManager {
+    var isDark by mutableStateOf(false)
+
+    fun init(context: Context) {
+        val prefs = context.getSharedPreferences("boshghabyar_theme", Context.MODE_PRIVATE)
+        isDark = prefs.getBoolean("dark", false)
+    }
+
+    fun setDark(context: Context, value: Boolean) {
+        isDark = value
+        context.getSharedPreferences("boshghabyar_theme", Context.MODE_PRIVATE)
+            .edit().putBoolean("dark", value).apply()
+    }
+}
 
 val VazirmatnFont = FontFamily(
     Font(R.font.vazirmatn_regular, FontWeight.Normal),

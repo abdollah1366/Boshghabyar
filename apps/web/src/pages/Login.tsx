@@ -11,7 +11,7 @@ import { useDocumentTitle } from '../lib/hooks';
 import type { AppUser } from '../lib/types';
 
 const REF_KEY = 'boshghabyar_ref';
-const CODE_LENGTH = 5;
+const CODE_LENGTH = 4;
 
 interface OtpRequestResponse { ok: boolean; expiresInSec: number; resendInSec: number; devCode?: string }
 interface AuthResponse { token: string; user: AppUser; isNew?: boolean }
@@ -272,7 +272,7 @@ export function Login() {
                 aria-describedby="code-hint"
                 required
               />
-              <span id="code-hint" className="field-hint center">کد ۵ رقمی پیامک‌شده را وارد کنید.</span>
+              <span id="code-hint" className="field-hint center">کد ۴ رقمی پیامک‌شده را وارد کنید.</span>
             </div>
 
             <details className="disclosure" open={Boolean(referral)}>

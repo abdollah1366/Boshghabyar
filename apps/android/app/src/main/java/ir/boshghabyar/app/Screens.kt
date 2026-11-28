@@ -336,8 +336,8 @@ fun LogScreen(app: AppState, autoCamera: Boolean, onOpenSuggestions: () -> Unit,
         AppCard {
             SectionTitle("تشخیص با عکس")
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppButton("عکس بگیر", ::capturePhoto, Modifier.weight(1f), loading = analyzing)
-                AppButton("از گالری", { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f), variant = ButtonVariant.Secondary)
+                AppButton("عکس بگیر", { app.notify(scope, "تشخیص با عکس فعلاً در حال توسعه است؛ غذا را دستی انتخاب کنید.") }, Modifier.weight(1f), loading = false)
+                AppButton("از گالری", { app.notify(scope, "تشخیص با عکس فعلاً در حال توسعه است؛ غذا را دستی انتخاب کنید.") }, Modifier.weight(1f), variant = ButtonVariant.Secondary)
             }
             AppButton("افزودن محصول با بارکد", onOpenScanFood, variant = ButtonVariant.Outline, modifier = Modifier.padding(top = 8.dp))
             if (recognition != null) {
@@ -846,6 +846,7 @@ fun ClubScreen(app: AppState) {
 fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Unit, onOpenHealth: () -> Unit = {}) {
     val api = app.api
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val user = app.user ?: return
     var goal by remember(user.id) { mutableStateOf(user.goal) }
     var name by remember(user.id) { mutableStateOf(user.name) }
@@ -904,6 +905,10 @@ fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Uni
                 if (user.proUntil != null) Text("تا ${jalaliDate(user.proUntil!!.take(10))}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Switch(checked = ThemeManager.isDark, onCheckedChange = { ThemeManager.setDark(context, it) })
+                Text("تم تیره", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 8.dp))
+            }
             PersianField("نام", name, { name = it })
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 Switch(checked = consent, onCheckedChange = { consent = it })
