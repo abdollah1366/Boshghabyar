@@ -7,7 +7,7 @@ export interface AppUser {
   name: string;
   email: string | null;
   phone: string | null;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'nutritionist';
   plan: Plan;
   proUntil: string | null;
   goal: UserGoal;

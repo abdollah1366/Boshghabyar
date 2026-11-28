@@ -5,11 +5,13 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Shell } from './components/Shell';
 import { PageSkeleton } from './components/ui';
 import { useAuth } from './context/AuthContext';
+import { Blog, BlogPost } from './pages/Blog';
 import { Club } from './pages/Club';
 import { Dashboard } from './pages/Dashboard';
 import { Landing } from './pages/Landing';
 import { LogMeal } from './pages/LogMeal';
 import { Login } from './pages/Login';
+import { Nutritionist } from './pages/Nutritionist';
 import { Profile } from './pages/Profile';
 import { Suggestions } from './pages/Suggestions';
 
@@ -42,11 +44,14 @@ export default function App() {
     <Routes>
       <Route path="/" element={ready && !user ? <Landing /> : <Protected><Dashboard /></Protected>} />
       <Route path="/login" element={<Login />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/log" element={<Protected><LogMeal /></Protected>} />
       <Route path="/club" element={<Protected><Club /></Protected>} />
       <Route path="/suggestions" element={<Protected><Suggestions /></Protected>} />
       <Route path="/reports" element={<Protected><Reports /></Protected>} />
       <Route path="/profile" element={<Protected><Profile /></Protected>} />
+      <Route path="/nutritionist" element={<Protected><Nutritionist /></Protected>} />
       <Route path="/admin" element={<Protected adminOnly><Admin /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -199,7 +199,7 @@ const patchUserSchema = z.object({
   plan: z.enum(['free', 'pro']).optional(),
   proUntil: z.string().datetime().nullable().optional(),
   status: z.enum(['active', 'blocked']).optional(),
-  role: z.enum(['user', 'admin']).optional(),
+  role: z.enum(['user', 'admin', 'nutritionist']).optional(),
 });
 
 adminRouter.patch('/users/:id', (req: AuthRequest, res) => {

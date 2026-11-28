@@ -24,7 +24,7 @@ export interface AuthRequest extends Request {
 export interface TokenPayload {
   sub: string;
   sid: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'nutritionist';
 }
 
 /** ساخت نشست جدید و برگرداندن توکن؛ نشست‌ها قابل ابطال (خروج) هستند */
@@ -115,6 +115,17 @@ export function adminRequired(req: AuthRequest, res: Response, next: NextFunctio
   authRequired(req, res, () => {
     if (req.user?.role !== 'admin') {
       res.status(403).json({ error: 'دسترسی مدیر وجود ندارد' });
+      return;
+    }
+    next();
+  });
+}
+
+/** دسترسی متخصص تغذیه (یا مدیر) */
+export function nutritionistRequired(req: AuthRequest, res: Response, next: NextFunction): void {
+  authRequired(req, res, () => {
+    if (req.user?.role !== 'nutritionist' && req.user?.role !== 'admin') {
+      res.status(403).json({ error: 'دسترسی متخصص تغذیه وجود ندارد' });
       return;
     }
     next();

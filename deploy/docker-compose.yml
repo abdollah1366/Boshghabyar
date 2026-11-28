@@ -1,0 +1,42 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      JWT_SECRET: "${JWT_SECRET:-please-change-me}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL:-admin@boshghabyar.ir}"
+      CORS_ORIGIN: "${CORS_ORIGIN:-http://130.185.75.111}"
+      TRUST_PROXY: "true"
+      APP_TIMEZONE: "Asia/Tehran"
+      ENABLE_DEMO: "${ENABLE_DEMO:-true}"
+      ALLOW_MOCK_UPGRADE: "${ALLOW_MOCK_UPGRADE:-true}"
+      SMS_PROVIDER: "${SMS_PROVIDER:-console}"
+      OTP_DEBUG_RETURN_CODE: "${OTP_DEBUG_RETURN_CODE:-true}"
+      AI_PROVIDER: "${AI_PROVIDER:-none}"
+      AI_API_KEY: "${AI_API_KEY:-}"
+      BAZAAR_RSA_PUBLIC_KEY: "${BAZAAR_RSA_PUBLIC_KEY:-}"
+      BAZAAR_TEST_MODE: "${BAZAAR_TEST_MODE:-true}"
+      RESEARCH_SECRET: "${RESEARCH_SECRET:-}"
+      DATABASE_PATH: /data/boshghabyar.db
+    volumes:
+      - boshghabyar-data:/data
+    expose:
+      - "3001"
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+
+volumes:
+  boshghabyar-data:

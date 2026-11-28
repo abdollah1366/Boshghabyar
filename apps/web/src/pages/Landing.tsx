@@ -11,13 +11,17 @@ import type { AppUser } from '../lib/types';
 
 const FEATURES: Array<{ icon: IconName; title: string; text: string }> = [
   { icon: 'camera', title: 'تشخیص غذا با عکس', text: 'از بشقابتان عکس بگیرید؛ نام غذا و مقدار پیشنهادی را در چند ثانیه می‌بینید.' },
-  { icon: 'plate', title: 'غذاهای ایرانی', text: 'پایگاهی از غذاهای رایج ایرانی، از چلوکباب و قورمه‌سبزی تا آش رشته و دلمهٔ تبریزی.' },
+  { icon: 'plate', title: 'غذاهای ایرانی', text: 'پایگاهی از غذاهای رایج ایرانی، از چلو کباب و قورمه سبزی تا آش رشته و دلمهٔ تبریزی.' },
   { icon: 'chart', title: 'گزارش شفاف', text: 'کالری و درشت‌مغذی‌ها را موتور محاسبه می‌کند، نه حدس یک مدل زبانی.' },
   { icon: 'trophy', title: 'باشگاه مشتریان', text: 'با ثبت وعده‌ها و دعوت دوستان ژتون بگیرید و نسخهٔ حرفه‌ای را رایگان فعال کنید.' },
+  { icon: 'calendar', title: 'برنامهٔ غذایی هفتگی', text: 'برنامهٔ هر روز با دستور پخت، انرژی و هزینهٔ تقریبی تا راحت تصمیم بگیرید.' },
+  { icon: 'heart', title: 'ردگیری سلامتی', text: 'قند، وزن، فشار خون و HbA1c را ثبت کنید و روند هفتگی و ماهانه ببینید.' },
+  { icon: 'scan', title: 'بارکد محصولات', text: 'بارکد محصول را اسکن کنید و با ثبت انرژی آن، به پایگاه دادهٔ همه کمک کنید.' },
+  { icon: 'doctor', title: 'پنل متخصص تغذیه', text: 'گزارش مراجعان را یک‌جا ببینید و پایش‌شان کنید.' },
 ];
 
 export function Landing() {
-  useDocumentTitle('تغذیهٔ هوشمند ایرانی');
+  useDocumentTitle('بشقاب‌یار — تغذیهٔ هوشمند ایرانی');
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -43,7 +47,10 @@ export function Landing() {
           <span className="brand-mark"><Icon name="bowl" size={22} /></span>
           بشقاب‌یار
         </Link>
-        <Link className="btn btn-secondary btn-sm" to="/login">ورود</Link>
+        <nav style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          <Link className="nav-link" to="/blog">وبلاگ</Link>
+          <Link className="btn btn-secondary btn-sm" to="/login">ورود</Link>
+        </nav>
       </header>
 
       <main>
@@ -61,6 +68,15 @@ export function Landing() {
         </section>
 
         <div className="landing-body">
+          <section aria-labelledby="what-title" style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
+            <h2 id="what-title">بشقاب‌یار چیست؟</h2>
+            <p className="muted">
+              بشقاب‌یار یک همراه هوشمند برای تغذیهٔ ایرانی است: وعده را ثبت کنید، ارزش غذایی و هزینهٔ آن را ببینید و جایگزین متعادل‌تر و مقرون‌به‌صرفه‌تر پیدا کنید.
+              محاسبات ما کاملاً تعیین‌پذیر و قابل توضیح است؛ هیچ مدل زبانی عددی تولید نمی‌کند و همهٔ اعداد از موتور محاسبهٔ خود بشقاب‌یار می‌آید.
+              این محصول در استارتاپ ویکند غذا و تغذیهٔ تبریز ۱۴۰۵ (از میان ۲۲ طرح منتخب) شکل گرفت.
+            </p>
+          </section>
+
           <div className="grid grid-4">
             {FEATURES.map((feature) => (
               <div className="card" key={feature.title}>
@@ -78,7 +94,10 @@ export function Landing() {
             </div>
             <Coin size={72} />
           </section>
-          <p className="footer-note">بشقاب‌یار؛ ساخته‌شده برای تغذیهٔ ایرانی</p>
+
+          <p className="footer-note">
+            بشقاب‌یار؛ ساخته‌شده برای تغذیهٔ ایرانی · <Link to="/blog" className="muted">مطالب وبلاگ</Link>
+          </p>
         </div>
       </main>
     </div>

@@ -12,6 +12,7 @@ interface NavItem {
   label: string;
   icon: IconName;
   admin?: boolean;
+  nutritionist?: boolean;
   mobile?: boolean;
   fab?: boolean;
 }
@@ -22,6 +23,7 @@ const NAV: NavItem[] = [
   { to: '/log', label: 'ثبت وعده', icon: 'plus', mobile: true, fab: true },
   { to: '/reports', label: 'گزارش‌ها', icon: 'chart', mobile: true },
   { to: '/suggestions', label: 'پیشنهادها', icon: 'spark' },
+  { to: '/nutritionist', label: 'پنل متخصص', icon: 'doctor', nutritionist: true },
   { to: '/profile', label: 'پروفایل', icon: 'user', mobile: true },
   { to: '/admin', label: 'مدیریت', icon: 'admin', admin: true },
 ];
@@ -42,7 +44,11 @@ export function Shell({ children }: { children: ReactNode }) {
     navigate('/login');
   };
 
-  const items = NAV.filter((item) => !item.admin || user?.role === 'admin');
+  const items = NAV.filter((item) => {
+    if (item.admin && user?.role !== 'admin') return false;
+    if (item.nutritionist && user?.role !== 'nutritionist' && user?.role !== 'admin') return false;
+    return true;
+  });
 
   return (
     <div className="app-shell">

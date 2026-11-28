@@ -202,6 +202,19 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_health_user_type ON health_measurements(user_id, type, measured_at);
 
+  CREATE TABLE IF NOT EXISTS blog_posts (
+    id TEXT PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    excerpt TEXT NOT NULL DEFAULT '',
+    body_md TEXT NOT NULL DEFAULT '',
+    cover_emoji TEXT NOT NULL DEFAULT '📝',
+    author TEXT NOT NULL DEFAULT 'بشقاب‌یار',
+    published_at TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published_at DESC);
+
   CREATE TABLE IF NOT EXISTS admin_audit (
     id TEXT PRIMARY KEY,
     admin_id TEXT NOT NULL,
@@ -226,13 +239,17 @@ if (!tableColumns('custom_foods').some((c) => c.name === 'shared')) {
 }
 db.exec('CREATE INDEX IF NOT EXISTS idx_custom_foods_barcode ON custom_foods(barcode) WHERE barcode IS NOT NULL');
 
+if (!tableColumns('users').some((c) => c.name === 'nutritionist_id')) {
+  db.exec('ALTER TABLE users ADD COLUMN nutritionist_id TEXT');
+}
+
 export interface UserRow {
   id: string;
   name: string;
   email: string | null;
   phone: string | null;
   password_hash: string | null;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'nutritionist';
   plan: Plan;
   pro_until: string | null;
   calorie_target: number;
@@ -251,6 +268,7 @@ export interface UserRow {
   research_consent: number;
   status: 'active' | 'blocked';
   last_login_at: string | null;
+  nutritionist_id: string | null;
   created_at: string;
 }
 
@@ -313,6 +331,10 @@ export function findUserById(id: string): UserRow | undefined {
 
 export function findUserByReferralCode(code: string): UserRow | undefined {
   return db.prepare('SELECT * FROM users WHERE referral_code = ?').get(code) as UserRow | undefined;
+}
+
+export function findUserByNutritionistCode(code: string): UserRow | undefined {
+  return db.prepare("SELECT * FROM users WHERE role = 'nutritionist' AND referral_code = ?").get(code) as UserRow | undefined;
 }
 
 export function trackEvent(type: string, userId: string | null = null, payload: Record<string, unknown> = {}): void {
@@ -399,8 +421,73 @@ function hardenAdmin(): void {
 seed();
 backfillReferralCodes();
 hardenAdmin();
+seedBlog();
 
-/** پاک‌سازی دوره‌ای دادهٔ موقت (کدهای پیامکی و نشست‌های منقضی) */
+/** اگر مطالب وبلاگ خالی بود، چند مطلب آغازین بساز */
+function seedBlog(): void {
+  const count = db.prepare('SELECT COUNT(*) AS n FROM blog_posts').get() as { n: number };
+  if (count.n > 0) return;
+  const insert = db.prepare(
+    'INSERT INTO blog_posts (id, slug, title, excerpt, body_md, cover_emoji, author, published_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  );
+  const posts = [
+    {
+      slug: 'calorie-counting-iranian-food',
+      title: 'چرا شمردن کالری غذای ایرانی سخت است و بشقاب‌یار چطور حلش می‌کند',
+      excerpt: 'غذای ایرانی واحد مشخصی ندارد؛ بشقاب‌یار با سهم‌گیری آشنا (قاشق، بشقاب، گرم) محاسبه را ساده می‌کند.',
+      emoji: '🍲',
+      body: [
+        '## مشکل از کجاست؟',
+        'اپ‌های کالری‌شمار خارجی فهرست غذاهای بین‌المللی دارند. وقتی «قورمه سبزی» یا «چلو کباب» را ثبت می‌کنید، یا پیدایش نمی‌کنید یا عددش را حدس می‌زنید.',
+        '',
+        '## راه‌حل بشقاب‌یار',
+        '- فهرست غذای ایرانی با ارزش تغذیه‌ای هر ۱۰۰ گرم',
+        '- سهم‌گیری با واحدهای آشنا: قاشق، بشقاب، کاسه، گرم',
+        '- محاسبهٔ آنی کالری، پروتئین، کربوهیدرات، چربی و فیبر',
+        '- پیشنهاد جایگزین بر اساس هدف و بودجه',
+        '',
+        '## نکته',
+        'اعداد بشقاب‌یار تخمینی و برای آگاهی است؛ جایگزین مشاورهٔ پزشکی نیست.',
+      ].join('\n'),
+    },
+    {
+      slug: 'meal-planning-budget',
+      title: 'برنامهٔ غذایی هفتگی با بودجهٔ محدود',
+      excerpt: 'چطور با یک بودجهٔ مشخص، برنامهٔ غذایی سالم هفتگی بچینید.',
+      emoji: '🗓️',
+      body: [
+        '## برنامه‌ریزی یعنی صرفه‌جویی',
+        'وقتی بدانید هر وعده چقدر انرژی و هزینه دارد، راحت‌تر تصمیم می‌گیرید.',
+        '',
+        '## چند نکته',
+        '- حبوبات (عدس، لوبیا) پروتئین ارزان و سیرکننده دارند',
+        '- تخم‌مرغ و پنیر برای صبحانهٔ اقتصادی عالی‌اند',
+        '- میوهٔ فصل ارزان‌تر و تازه‌تر است',
+        '',
+        'در بشقاب‌یار بخش «برنامهٔ غذایی» هر روز را با انرژی و قیمت تقریبی می‌بینید.',
+      ].join('\n'),
+    },
+    {
+      slug: 'health-tracking',
+      title: 'ردگیری قند، وزن و فشار خون چرا مهم است',
+      excerpt: 'ثبت منظم شاخص‌های سلامتی به شما روند واقعی‌تان را نشان می‌دهد.',
+      emoji: '❤️',
+      body: [
+        '## عددها قصه می‌گویند',
+        'یک عدد قند خون یا وزن به‌تنهایی چیزی نمی‌گوید؛ روند چند هفته‌ای است که مهم است.',
+        '',
+        '## بشقاب‌یار چه می‌کند',
+        '- ثبت قند خون، وزن، قد، فشار خون، HbA1c و …',
+        '- نمودار روند هفتگی و ماهانه',
+        '- ژتون تشویقی برای ثبت منظم',
+      ].join('\n'),
+    },
+  ];
+  for (const p of posts) {
+    insert.run(randomUUID(), p.slug, p.title, p.excerpt, p.body, p.emoji, 'بشقاب‌یار', now(), now());
+  }
+  trackEvent('blog.seeded', null, { posts: posts.length });
+}
 export function cleanupExpired(): void {
   const at = now();
   db.prepare('DELETE FROM otp_codes WHERE expires_at < ?').run(new Date(Date.now() - 86_400_000).toISOString());
