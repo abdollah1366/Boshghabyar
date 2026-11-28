@@ -80,6 +80,8 @@ fun HomeScreen(
     onNavigate: (String) -> Unit,
     onOpenCamera: () -> Unit,
     onOpenSuggestions: () -> Unit,
+    onOpenQuiz: () -> Unit,
+    onOpenLeaderboard: () -> Unit,
 ) {
     val user = app.user ?: return
     val api = app.api
@@ -151,6 +153,13 @@ fun HomeScreen(
             QuickAction(Icons.Filled.EventAvailable, "حضور روزانه", Modifier.weight(1f), enabled = !checkingIn, onClick = ::checkin)
         }
         RecentMealsCard(current, onOpenSuggestions)
+        AppCard {
+            SectionTitle("کاوش بیشتر")
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AppButton("مسابقهٔ روزانه", onOpenQuiz, Modifier.weight(1f), variant = ButtonVariant.Secondary)
+                AppButton("برترین‌ها", onOpenLeaderboard, Modifier.weight(1f), variant = ButtonVariant.Secondary)
+            }
+        }
     }
 }
 

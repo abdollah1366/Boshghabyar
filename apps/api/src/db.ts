@@ -215,6 +215,38 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts(published_at DESC);
 
+  CREATE TABLE IF NOT EXISTS quiz_questions (
+    id TEXT PRIMARY KEY,
+    question TEXT NOT NULL,
+    options TEXT NOT NULL,
+    correct_index INTEGER NOT NULL,
+    explanation TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS quiz_answers (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    question_id TEXT NOT NULL REFERENCES quiz_questions(id) ON DELETE CASCADE,
+    correct INTEGER NOT NULL,
+    day TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS ux_quiz_user_day ON quiz_answers(user_id, day);
+  CREATE INDEX IF NOT EXISTS idx_quiz_user_day ON quiz_answers(user_id, day);
+
+  CREATE TABLE IF NOT EXISTS nutritionist_profiles (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    bio TEXT NOT NULL DEFAULT '',
+    specialties TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT '',
+    price_irr INTEGER NOT NULL DEFAULT 0,
+    avatar_emoji TEXT NOT NULL DEFAULT '👩‍⚕️',
+    contact_phone TEXT,
+    verified INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS admin_audit (
     id TEXT PRIMARY KEY,
     admin_id TEXT NOT NULL,
@@ -422,6 +454,7 @@ seed();
 backfillReferralCodes();
 hardenAdmin();
 seedBlog();
+seedQuiz();
 
 /** اگر مطالب وبلاگ خالی بود، چند مطلب آغازین بساز */
 function seedBlog(): void {
@@ -487,6 +520,27 @@ function seedBlog(): void {
     insert.run(randomUUID(), p.slug, p.title, p.excerpt, p.body, p.emoji, 'بشقاب‌یار', now(), now());
   }
   trackEvent('blog.seeded', null, { posts: posts.length });
+}
+
+/** سوال‌های مسابقهٔ روزانه (اگر خالی بود) */
+function seedQuiz(): void {
+  const count = db.prepare('SELECT COUNT(*) AS n FROM quiz_questions').get() as { n: number };
+  if (count.n > 0) return;
+  const insert = db.prepare('INSERT INTO quiz_questions (id, question, options, correct_index, explanation, created_at) VALUES (?, ?, ?, ?, ?, ?)');
+  const questions = [
+    { q: 'کدام غذای ایرانی معمولاً بیشترین پروتئین را دارد؟', opts: ['چلو کباب کوبیده', 'برنج سفید', 'نان لواش', 'کشک بادمجان'], correct: 0, exp: 'گوشت کباب پروتئین بالایی دارد.' },
+    { q: 'قند خون را معمولاً با کدام واحد اندازه می‌گیرند؟', opts: ['mg/dL', 'kg', 'mmHg', 'گرم'], correct: 0, exp: 'mg/dL واحد رایج قند خون است.' },
+    { q: 'برای کاهش وزن، مهم‌ترین اصل چیست؟', opts: ['کسری کالری', 'ورزش سنگین', 'گرسیدن', 'خوردن آب زیاد'], correct: 0, exp: 'کسری کالری (کالری ورودی کمتر از مصرف) کلید اصلی است.' },
+    { q: 'فیبر بیشتر در کدام مورد است؟', opts: ['عدس و لوبیا', 'گوشت قرمز', 'نان سفید', 'روغن'], correct: 0, exp: 'حبوبات فیبر فراوانی دارند.' },
+    { q: 'کدام یک میان‌وعدهٔ کم‌کالری‌تری است؟', opts: ['سیب', 'کیک شکلاتی', 'چیپس', 'کلوچه'], correct: 0, exp: 'میوه کالری کمتری دارد.' },
+    { q: 'HbA1c نشانگر چیست؟', opts: ['میانگین قند چند ماه اخیر', 'قند خون لحظه‌ای', 'فشار خون', 'وزن'], correct: 0, exp: 'HbA1c میانگین قند خون ۲-۳ ماه اخیر را نشان می‌دهد.' },
+    { q: 'پروتئین هر گرم چند کیلوکالری دارد؟', opts: ['۴', '۹', '۲', '۷'], correct: 0, exp: 'پروتئین و کربوهیدرات ۴، چربی ۹ کیلوکالری در هر گرم.' },
+    { q: 'کدام یک اقتصادی‌ترین منبع پروتئین است؟', opts: ['تخم مرغ', 'گوشت قرمز', 'مرغ', 'ماهی'], correct: 0, exp: 'تخم‌مرغ از نظر قیمت به پروتئین بسیار به‌صرفه است.' },
+  ];
+  for (const q of questions) {
+    insert.run(randomUUID(), q.q, JSON.stringify(q.opts), q.correct, q.exp, now());
+  }
+  trackEvent('quiz.seeded', null, { questions: questions.length });
 }
 export function cleanupExpired(): void {
   const at = now();

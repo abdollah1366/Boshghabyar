@@ -196,6 +196,8 @@ fun BoshghabYarApp(app: AppState) {
                         onNavigate = { navController.navigateToTab(it) },
                         onOpenCamera = { navController.navigate("log?camera=true") { launchSingleTop = true } },
                         onOpenSuggestions = { navController.navigate("suggestions") },
+                        onOpenQuiz = { navController.navigate("quiz") },
+                        onOpenLeaderboard = { navController.navigate("leaderboard") },
                     )
                 }
             }
@@ -224,6 +226,12 @@ fun BoshghabYarApp(app: AppState) {
             }
             composable("health") {
                 DetailScaffold(app, "شاخص‌های سلامتی", onBack = { navController.popBackStack() }) { HealthScreen(app) }
+            }
+            composable("quiz") {
+                DetailScaffold(app, "مسابقهٔ روزانه", onBack = { navController.popBackStack() }) { QuizScreen(app) }
+            }
+            composable("leaderboard") {
+                DetailScaffold(app, "برترین‌ها", onBack = { navController.popBackStack() }) { LeaderboardScreen(app) }
             }
             composable("suggestions") {
                 DetailScaffold(app, "پیشنهادها", onBack = { navController.popBackStack() }) { SuggestionsScreen(app) }

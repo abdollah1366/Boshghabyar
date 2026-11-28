@@ -14,6 +14,8 @@ export const TOKEN_RULES = {
   healthLog: 2,
   healthStreak: 10,
   healthGoal: 50,
+  quizCorrect: 10,
+  quizWrong: 1,
 } as const;
 
 export type LevelId = 'bronze' | 'silver' | 'gold' | 'diamond';

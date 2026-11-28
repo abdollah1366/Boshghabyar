@@ -9,10 +9,13 @@ import { Blog, BlogPost } from './pages/Blog';
 import { Club } from './pages/Club';
 import { Dashboard } from './pages/Dashboard';
 import { Landing } from './pages/Landing';
+import { Leaderboard } from './pages/Leaderboard';
 import { LogMeal } from './pages/LogMeal';
 import { Login } from './pages/Login';
 import { Nutritionist } from './pages/Nutritionist';
+import { Nutritionists } from './pages/Nutritionists';
 import { Profile } from './pages/Profile';
+import { Quiz } from './pages/Quiz';
 import { Suggestions } from './pages/Suggestions';
 
 const Reports = lazy(() => import('./pages/Reports'));
@@ -46,6 +49,9 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/nutritionists" element={<Nutritionists />} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/quiz" element={<Protected><Quiz /></Protected>} />
       <Route path="/log" element={<Protected><LogMeal /></Protected>} />
       <Route path="/club" element={<Protected><Club /></Protected>} />
       <Route path="/suggestions" element={<Protected><Suggestions /></Protected>} />

@@ -19,9 +19,12 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/', label: 'خانه', icon: 'home', mobile: true },
-  { to: '/club', label: 'باشگاه', icon: 'trophy', mobile: true },
+  { to: '/quiz', label: 'مسابقه', icon: 'spark', mobile: true },
+  { to: '/leaderboard', label: 'برترین‌ها', icon: 'trophy' },
+  { to: '/nutritionists', label: 'متخصصان', icon: 'doctor' },
+  { to: '/club', label: 'باشگاه', icon: 'gift', mobile: true },
   { to: '/log', label: 'ثبت وعده', icon: 'plus', mobile: true, fab: true },
-  { to: '/reports', label: 'گزارش‌ها', icon: 'chart', mobile: true },
+  { to: '/reports', label: 'گزارش‌ها', icon: 'chart' },
   { to: '/suggestions', label: 'پیشنهادها', icon: 'spark' },
   { to: '/nutritionist', label: 'پنل متخصص', icon: 'doctor', nutritionist: true },
   { to: '/profile', label: 'پروفایل', icon: 'user', mobile: true },

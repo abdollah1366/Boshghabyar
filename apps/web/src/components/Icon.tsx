@@ -34,6 +34,7 @@ const PATHS = {
   heart: 'M12 21s-7-4.5-7-11a4 4 0 0 1 7-3 4 4 0 0 1 7 3c0 6.5-7 11-7 11Z',
   scan: 'M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16',
   doctor: 'M4 5h5V3h6v2h5v16H4V5Zm8 4a2 2 0 0 0-2 2v2h-2v2h2v2h2v-2h2v-2h-2v-2a2 2 0 0 0-2-2Z',
+  phone: 'M6 4h4l2 5-2 1c1 3 3 5 6 6l1-2 5 2v4c0 1-1 2-2 2C10 22 2 14 2 6c0-1 1-2 2-2Z',
 } as const;
 
 export type IconName = keyof typeof PATHS;

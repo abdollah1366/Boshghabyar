@@ -171,6 +171,27 @@ export function Dashboard() {
         )}
       </section>
 
+      <section aria-labelledby="discover-title" style={{ marginTop: 'var(--space-4)' }}>
+        <h2 id="discover-title" style={{ fontSize: 'var(--text-md)', marginBottom: 'var(--space-3)' }}>بیشتر کاوش کنید</h2>
+        <div className="grid grid-3">
+          <Link className="card card-interactive stack-sm" to="/quiz" style={{ textDecoration: 'none' }}>
+            <Icon name="spark" size={26} />
+            <strong>مسابقهٔ روزانه</strong>
+            <span className="small muted">هر روز یک سوال تغذیه؛ جواب درست +۱۰ ژتون.</span>
+          </Link>
+          <Link className="card card-interactive stack-sm" to="/leaderboard" style={{ textDecoration: 'none' }}>
+            <Icon name="trophy" size={26} />
+            <strong>برترین‌ها</strong>
+            <span className="small muted">ببینید چه کسانی بیشترین ژتون را گرفته‌اند.</span>
+          </Link>
+          <Link className="card card-interactive stack-sm" to="/nutritionists" style={{ textDecoration: 'none' }}>
+            <Icon name="doctor" size={26} />
+            <strong>متخصصان تغذیه</strong>
+            <span className="small muted">مشاورهٔ شخصی با متخصصان تأییدشده.</span>
+          </Link>
+        </div>
+      </section>
+
       {deleting && (
         <ConfirmDialog title="حذف وعده" confirmLabel="حذف" busy={busy} onConfirm={remove} onClose={() => setDeleting(null)}>
           <p>«{nameOf(deleting.foodId)}» ({formatNumber(deleting.grams)} گرم) از وعده‌های امروز حذف شود؟</p>
