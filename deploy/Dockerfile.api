@@ -15,6 +15,7 @@ COPY package.json package-lock.json ./
 COPY --from=deps /app/node_modules node_modules
 COPY packages/core packages/core
 COPY apps/api apps/api
+COPY scripts scripts
 RUN npm run build -w @boshghabyar/core
 WORKDIR /app/apps/api
 EXPOSE 3001
