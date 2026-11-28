@@ -33,6 +33,10 @@ export const config = {
   enableDemo: flag(process.env.ENABLE_DEMO, true),
   allowMockUpgrade: flag(process.env.ALLOW_MOCK_UPGRADE, !isProd),
 
+  /** پرداخت درون‌برنامه‌ای بازار */
+  bazaarRsaPublicKey: process.env.BAZAAR_RSA_PUBLIC_KEY ?? '',
+  bazaarTestMode: flag(process.env.BAZAAR_TEST_MODE, !isProd),
+
   adminEmail: process.env.ADMIN_EMAIL ?? 'admin@boshghabyar.ir',
   adminPassword: process.env.ADMIN_PASSWORD ?? '',
 

@@ -2,7 +2,6 @@ package ir.boshghabyar.app
 
 import java.text.DecimalFormat
 import java.util.Calendar
-import java.util.Locale
 
 fun faNumber(value: Number): String {
     val s = if (value is Double && value % 1.0 == 0.0) {
@@ -26,20 +25,25 @@ fun faDigits(input: String): String = input.map { c ->
     if (c in '0'..'9') ('۰'.code + (c - '0')).toChar() else c
 }.joinToString("")
 
-/** تاریخ جلالی از رشتهٔ YYYY-MM-DD؛ اگر ناموفق بود همان ورودی برمی‌گردد */
+/** تاریخ شمسی (جلالی) از رشتهٔ YYYY-MM-DD؛ در صورت خطا همان ورودی برمی‌گردد */
 fun jalaliDate(iso: String, withYear: Boolean = true): String {
     return try {
-        val parts = iso.split("-")
+        val clean = iso.take(10)
+        val parts = clean.split("-")
         val year = parts[0].toInt()
         val month = parts[1].toInt()
         val day = parts[2].toInt()
-        val g = Calendar.getInstance()
-        g.set(year, month - 1, day)
-        val j = java.util.GregorianCalendar()
-        j.time = g.time
-        val fmt = if (withYear) "d MMMM yyyy" else "d MMM"
-        val out = android.icu.text.SimpleDateFormat(fmt, android.icu.util.ULocale("fa_IR"))
-        out.format(j.time)
+        val gregorian = Calendar.getInstance()
+        gregorian.clear()
+        gregorian.set(year, month - 1, day)
+        val pattern = if (withYear) "d MMMM y" else "d MMM"
+        val locale = android.icu.util.ULocale("fa_IR@calendar=persian")
+        val icuCal = android.icu.util.Calendar.getInstance(locale)
+        icuCal.timeInMillis = gregorian.timeInMillis
+        val fmt = android.icu.text.SimpleDateFormat(pattern, locale)
+        fmt.calendar = icuCal
+        val text = fmt.format(gregorian.time)
+        faDigits(text)
     } catch (e: Exception) {
         iso
     }

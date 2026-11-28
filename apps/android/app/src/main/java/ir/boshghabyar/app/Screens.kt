@@ -1,6 +1,7 @@
 ﻿package ir.boshghabyar.app
 
 import android.net.Uri
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -854,7 +855,50 @@ fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Uni
     var error by remember { mutableStateOf<String?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var buying by remember { mutableStateOf(false) }
     var showDelete by remember { mutableStateOf(false) }
+    val registry = LocalActivityResultRegistryOwner.current?.activityResultRegistry
+    val bazaar = remember { BazaarPayment(context) }
+
+    fun buySubscription(productId: String) {
+        val reg = registry ?: run { error = "پرداخت در این نسخه در دسترس نیست"; return }
+        buying = true
+        error = null
+        message = null
+        val doPurchase = {
+            bazaar.purchaseSubscription(reg, productId, user.id) { result ->
+                when (result) {
+                    is BazaarPurchaseResult.Success -> {
+                        val info = result.info
+                        scope.launch {
+                            apiResult {
+                                api.post(
+                                    "/api/payments/bazaar/verify",
+                                    JSONObject().put("purchaseData", info.originalJson).put("signature", info.dataSignature),
+                                )
+                            }.onSuccess { res ->
+                                res.optJSONObject("user")?.let { app.user = AppUser.from(it) }
+                                message = "نسخهٔ حرفه‌ای فعال شد"
+                            }.onFailure { error = ApiClient.message(it) }
+                            buying = false
+                        }
+                    }
+                    is BazaarPurchaseResult.Canceled -> { buying = false; message = "پرداخت لغو شد" }
+                    is BazaarPurchaseResult.Error -> { buying = false; error = result.message }
+                }
+            }
+        }
+        if (bazaar.isConnected()) {
+            doPurchase()
+        } else {
+            bazaar.connect { connected ->
+                if (connected) doPurchase() else {
+                    buying = false
+                    error = "برنامهٔ کافه‌بازار نصب نیست؛ نمی‌توانید پرداخت کنید."
+                }
+            }
+        }
+    }
 
     fun saveGoal() {
         scope.launch {
@@ -938,7 +982,15 @@ fun ProfileScreen(app: AppState, onLogout: () -> Unit, onSessionEnded: () -> Uni
         AppCard {
             SectionTitle("اشتراک")
             Text("نسخهٔ رایگان شامل ۲۰ غذای ایرانی، ۷ روز تاریخچه و گزارش پایه است.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (!user.isPro) AppButton("ارتقا به حرفه‌ای", ::upgrade, variant = ButtonVariant.Accent, loading = busy)
+            if (user.proUntil != null) {
+                Text("نسخهٔ حرفه‌ای شما تا ${jalaliDate(user.proUntil!!.take(10))} فعال است.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            }
+            if (!user.isPro) {
+                Spacer(Modifier.height(8.dp))
+                AppButton("خرید اشتراک یک ماهه (۳۰ روز)", { buySubscription("1000") }, variant = ButtonVariant.Accent, loading = buying)
+                AppButton("خرید اشتراک یک ساله (۳۶۵ روز)", { buySubscription("1001") }, variant = ButtonVariant.Secondary, loading = buying)
+                Text("پرداخت از طریق کافه‌بازار انجام می‌شود.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
 
         AppButton("شاخص‌های سلامتی (قند، وزن، فشار و …)", onOpenHealth, variant = ButtonVariant.Secondary)

@@ -105,7 +105,7 @@ fun HealthScreen(app: AppState) {
                 EmptyState(Icons.Filled.Favorite, "هنوز شاخصی ثبت نشده", "شاخص‌های سلامتی خود را به‌صورت منظم ثبت کنید تا روند را ببینید.")
             } else {
                 val sorted = history.sortedBy { it.measuredAt }
-                BarChart(values = sorted.map { it.value.toInt() }, labels = sorted.map { it.measuredAt.takeLast(5) })
+                BarChart(values = sorted.map { it.value.toInt() }, labels = sorted.map { jalaliDate(it.measuredAt, withYear = false) })
                 Spacer(Modifier.height(8.dp))
                 val latest = history.first()
                 Text("آخرین مقدار: ${faNumber(latest.value)} $unit (${jalaliDate(latest.measuredAt)})", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)

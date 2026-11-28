@@ -222,6 +222,15 @@ async function main() {
   const badBarcode = await call('/api/foods/scan', { method: 'POST', token: legacy, body: { barcode: 'abc', nameFa: 'بد', kcalPer100g: 450 } });
   check('invalid barcode rejected', badBarcode.status === 400);
 
+  // ---------- پرداخت بازار (حالت آزمایشی) ----------
+  const products = await call('/api/payments/bazaar/products', { token: legacy });
+  check('bazaar products listed', products.status === 200 && products.body.products.some((p) => p.sku === '1000') && products.body.products.some((p) => p.sku === '1001'));
+  const purchaseData = JSON.stringify({ orderId: `test-${Date.now()}`, productId: '1000', purchaseTime: Date.now(), purchaseState: 0, purchaseToken: 'tok' });
+  const verify = await call('/api/payments/bazaar/verify', { method: 'POST', token: legacy, body: { purchaseData, signature: 'dGVzdHNpZ25hdHVyZQ==' } });
+  check('bazaar verify (test mode) grants pro', verify.status === 200 && verify.body.user.plan === 'pro' && Boolean(verify.body.proUntil), `status=${verify.status}`);
+  const verifyDup = await call('/api/payments/bazaar/verify', { method: 'POST', token: legacy, body: { purchaseData, signature: 'dGVzdHNpZ25hdHVyZQ==' } });
+  check('bazaar verify idempotent', verifyDup.status === 200 && verifyDup.body.alreadyProcessed === true);
+
   // ---------- نشست و حریم خصوصی ----------
   const out = await call('/api/auth/logout', { method: 'POST', token: legacy });
   const after = await call('/api/me', { token: legacy });
