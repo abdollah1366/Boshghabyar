@@ -11,6 +11,7 @@ RUN npm ci --workspace @boshghabyar/core --workspace @boshghabyar/api
 FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
+COPY package.json package-lock.json ./
 COPY --from=deps /app/node_modules node_modules
 COPY packages/core packages/core
 COPY apps/api apps/api
